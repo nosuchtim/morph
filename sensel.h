@@ -88,7 +88,6 @@ extern "C" {
 
 
   // This type is for storing contact information
-  // NOTE: I use unsigned types for some of these fields. I may want to consider signed types for faster processing.
 
   PACK(
   typedef struct
