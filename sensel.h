@@ -99,9 +99,9 @@ extern "C" {
     float y_pos_mm; // y position in mm
     vel_t dx; // change in x from last frame
     vel_t dy; // change in y from last frame
-    int16 orientation; // angle from -90 to 90 multiplied by 256
-    uint16 major_axis; // length of the major axis multiplied by 256
-    uint16 minor_axis; // length of the minor axis multiplied by 256
+    float orientation_degrees; // angle from -90 to 90 degrees
+    float major_axis_mm; // length of the major axis in mm
+    float minor_axis_mm; // length of the minor axis in mm
     grid_coord_t peak_x;
     grid_coord_t peak_y;
     label_t id; // TODO: The type of this should be something like contact_id

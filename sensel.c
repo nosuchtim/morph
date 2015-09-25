@@ -224,20 +224,20 @@ int senselReadContacts(contact_t * contacts)
 
   for(int i = 0; i < num_contacts; i++)
   {
-    contacts[i].total_force = contacts_raw[i].total_force;
-    contacts[i].uid =         contacts_raw[i].uid;
-    contacts[i].area =        contacts_raw[i].area;
-    contacts[i].x_pos_mm =    contacts_raw[i].x_pos * sensor_x_to_mm_factor;
-    contacts[i].y_pos_mm =    contacts_raw[i].y_pos * sensor_y_to_mm_factor;
-    contacts[i].dx =          contacts_raw[i].dx;
-    contacts[i].dy =          contacts_raw[i].dy;
-    contacts[i].orientation = contacts_raw[i].orientation;
-    contacts[i].major_axis =  contacts_raw[i].major_axis;
-    contacts[i].minor_axis =  contacts_raw[i].minor_axis;
-    contacts[i].peak_x =      contacts_raw[i].peak_x;
-    contacts[i].peak_y =      contacts_raw[i].peak_y;
-    contacts[i].id =          contacts_raw[i].id;
-    contacts[i].type =        contacts_raw[i].type;
+    contacts[i].total_force =         contacts_raw[i].total_force;
+    contacts[i].uid =                 contacts_raw[i].uid;
+    contacts[i].area =                contacts_raw[i].area;
+    contacts[i].x_pos_mm =            contacts_raw[i].x_pos * sensor_x_to_mm_factor;
+    contacts[i].y_pos_mm =            contacts_raw[i].y_pos * sensor_y_to_mm_factor;
+    contacts[i].dx =                  contacts_raw[i].dx;
+    contacts[i].dy =                  contacts_raw[i].dy;
+    contacts[i].orientation_degrees = contacts_raw[i].orientation / 256.0f;
+    contacts[i].major_axis_mm =       contacts_raw[i].major_axis * sensor_x_to_mm_factor;
+    contacts[i].minor_axis_mm =       contacts_raw[i].minor_axis * sensor_x_to_mm_factor;
+    contacts[i].peak_x =              contacts_raw[i].peak_x;
+    contacts[i].peak_y =              contacts_raw[i].peak_y;
+    contacts[i].id =                  contacts_raw[i].id;
+    contacts[i].type =                contacts_raw[i].type;
   }
   
   return num_contacts;

@@ -63,9 +63,13 @@ int main()
     for(int i = 0; i < n_contacts; i++)
     {
       int force = contacts[i].total_force;
-      float sensor_x_mm = contacts[i].x_pos_mm;
-      float sensor_y_mm = contacts[i].y_pos_mm;
-      
+      float x_mm = contacts[i].x_pos_mm;
+      float y_mm = contacts[i].y_pos_mm;
+      //Read out shape information (ellipses)
+      float major = contacts[i].major_axis_mm;
+      float minor = contacts[i].minor_axis_mm;
+      float orientation = contacts[i].orientation_degrees;
+
       int id = contacts[i].id;
       int event_type = contacts[i].type;
       
@@ -88,8 +92,9 @@ int main()
           event = "error";
       }
       
-      printf("Contact ID %d, event=%s, mm coord: (%f, %f), force=%d\n", 
-             id, event, sensor_x_mm, sensor_y_mm, force);
+      printf("Contact ID %d, event=%s, mm coord: (%f, %f), force=%d, " \
+             "major=%f, minor=%f, orientation=%f\n", 
+             id, event, x_mm, y_mm, force, major, minor, orientation);
     }
     
     if(n_contacts > 0)
