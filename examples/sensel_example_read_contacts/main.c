@@ -54,20 +54,17 @@ int main()
   //Enable scanning
   senselStartScanning();
 
+  printf("Touch sensor! (press ctrl-c to quit)...\n");
+
   while(!ctrl_c_requested)
   {
     n_contacts = senselReadContacts(contacts);
   
-    if(n_contacts == 0)
-    {
-      printf("NO CONTACTS\n");
-    }
-   
     for(int i = 0; i < n_contacts; i++)
     {
       int force = contacts[i].total_force;
-      float sensor_x = contacts[i].x_pos;
-      float sensor_y = contacts[i].y_pos;
+      float sensor_x_mm = contacts[i].x_pos_mm;
+      float sensor_y_mm = contacts[i].y_pos_mm;
       
       int id = contacts[i].id;
       int event_type = contacts[i].type;
@@ -92,7 +89,7 @@ int main()
       }
       
       printf("Contact ID %d, event=%s, mm coord: (%f, %f), force=%d\n", 
-             id, event, sensor_x, sensor_y, force);
+             id, event, sensor_x_mm, sensor_y_mm, force);
     }
     
     if(n_contacts > 0)

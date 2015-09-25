@@ -44,6 +44,15 @@ static sensel_serial_data serial_data;
 static uint8* frame_buffer = NULL;
 static int frame_buffer_capacity = 0;
 
+static int    sensor_max_x;
+static int    sensor_max_y;
+static float  sensor_width_mm;
+static float  sensor_height_mm;
+static float  sensor_x_to_mm_factor;
+static float  sensor_y_to_mm_factor;
+
+contact_raw_t contacts_raw[MAX_CONTACTS];
+
 bool _frameBufferEnsureCapacity(int capacity)
 {
   // If the read buffer is too small, make it bigger
@@ -209,8 +218,27 @@ int senselReadContacts(contact_t * contacts)
 
   //copy from frame_buffer into contacts
   int num_contacts = frame_buffer[2];
-  int contact_buffer_size = num_contacts * sizeof(contact_t);
-  memcpy(contacts, &(frame_buffer[3]), contact_buffer_size);
+  int contact_buffer_size = num_contacts * sizeof(contact_raw_t);
+
+  memcpy(contacts_raw, &(frame_buffer[3]), contact_buffer_size);
+
+  for(int i = 0; i < num_contacts; i++)
+  {
+    contacts[i].total_force = contacts_raw[i].total_force;
+    contacts[i].uid =         contacts_raw[i].uid;
+    contacts[i].area =        contacts_raw[i].area;
+    contacts[i].x_pos_mm =    contacts_raw[i].x_pos * sensor_x_to_mm_factor;
+    contacts[i].y_pos_mm =    contacts_raw[i].y_pos * sensor_y_to_mm_factor;
+    contacts[i].dx =          contacts_raw[i].dx;
+    contacts[i].dy =          contacts_raw[i].dy;
+    contacts[i].orientation = contacts_raw[i].orientation;
+    contacts[i].major_axis =  contacts_raw[i].major_axis;
+    contacts[i].minor_axis =  contacts_raw[i].minor_axis;
+    contacts[i].peak_x =      contacts_raw[i].peak_x;
+    contacts[i].peak_y =      contacts_raw[i].peak_y;
+    contacts[i].id =          contacts_raw[i].id;
+    contacts[i].type =        contacts_raw[i].type;
+  }
   
   return num_contacts;
 }
@@ -238,6 +266,26 @@ bool senselOpenConnection(char* com_port)
   {
     frame_buffer = (uint8*)malloc(FRAME_BUFFER_INITIAL_CAPACITY*sizeof(uint8));
     frame_buffer_capacity = FRAME_BUFFER_INITIAL_CAPACITY*sizeof(uint8);
+
+    uint8 buf[2];
+
+    //Read in max X and max Y values
+    _readReg(0x10, 2, buf);
+    sensor_max_x = (256 * (buf[0] - 1));
+    sensor_max_y = (256 * (buf[1] - 1));
+
+    uint32 sensor_width_um;
+    uint32 sensor_height_um;
+
+    //Read in active area dimensions
+    _readReg(SENSEL_REG_SENSOR_ACTIVE_AREA_WIDTH_UM,  4, (uint8 *)&sensor_width_um);
+    _readReg(SENSEL_REG_SENSOR_ACTIVE_AREA_HEIGHT_UM, 4, (uint8 *)&sensor_height_um);
+
+    sensor_width_mm = sensor_width_um / 1000.0;
+    sensor_height_mm = sensor_height_um / 1000.0;
+
+    sensor_x_to_mm_factor = sensor_width_mm / sensor_max_x;
+    sensor_y_to_mm_factor = sensor_height_mm / sensor_max_y;
 
     return true;
   }
