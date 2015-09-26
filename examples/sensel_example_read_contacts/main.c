@@ -21,6 +21,7 @@
  */
 
 #include <stdio.h>
+#include <unistd.h>
 #include <signal.h> //so we can catch a ctrl+c key event
 #include "sensel.h"
 
@@ -107,9 +108,12 @@ int main()
 
   if(sensel_sensor_opened)
   {
+    sleep(1); //Let ctrl-c-trashed packets clear out
+    senselSetLEDBrightnessAll(0);
     senselStopScanning();
     senselCloseConnection();
   }
+  printf("Done!\n");
 }
 
 
