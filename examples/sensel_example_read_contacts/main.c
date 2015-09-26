@@ -20,8 +20,14 @@
  * This opens a Sensel sensor, reads contact data, and prints the data to the console.
  */
 
-#include <stdio.h>
+//Inclue a sleep function
+#ifdef WIN32
+#include <Windows.h>
+#else
 #include <unistd.h>
+#endif
+
+#include <stdio.h>
 #include <signal.h> //so we can catch a ctrl+c key event
 #include "sensel.h"
 
@@ -108,7 +114,11 @@ int main()
 
   if(sensel_sensor_opened)
   {
+#ifdef WIN32
+	Sleep(1000);
+#else
     sleep(1); //Let ctrl-c-trashed packets clear out
+#endif
     senselSetLEDBrightnessAll(0);
     senselStopScanning();
     senselCloseConnection();
