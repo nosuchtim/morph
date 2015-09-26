@@ -293,6 +293,51 @@ bool senselOpenConnection(char* com_port)
   return false;
 }
 
+void senselSetLEDBrightness(int idx, uint8 brightness)
+{
+  _writeReg(SENSEL_REG_LED_BRIGHTNESS + idx, 1, &brightness);
+}
+
+void senselSetLEDBrightnessAll(uint8 brightness)
+{
+  int i;
+  uint8 led_buf[16];
+
+  for(i = 0; i < 16; i++)
+    led_buf[i] = brightness;
+
+  _writeReg(SENSEL_REG_LED_BRIGHTNESS, 16, led_buf);
+}
+
+  // Returns (x,y,z) acceleration in G's using the following coordinate system:
+  //
+  //          ---------------------------
+  //        /   Z /\  _                 /
+  //       /       |  /| Y             /
+  //      /        | /                /
+  //     /         |/                /
+  //    /           -----> X        /
+  //   /                           /
+  //   ----------------------------
+  //
+  // Assumes accelerometer is configured to the default +/- 2G range
+bool senselReadAccelerometerData(accel_data_t *accel_data)
+{
+  accel_data_raw_t raw_data;
+
+  // Read accelerometer data bytes for X, Y and Z
+  if(!_readReg(SENSEL_REG_ACCEL_X, sizeof(accel_data_raw_t), (uint8 *)&raw_data))
+    return false;
+
+  // Rescale to G's (at a range of +/- 2G, accelerometer returns 0x4000 for 1G acceleration)
+
+  accel_data->x = ((float)raw_data.x) / 0x4000;
+  accel_data->y = ((float)raw_data.y) / 0x4000;    
+  accel_data->z = ((float)raw_data.z) / 0x4000;
+    
+  return true;
+}
+
 void senselCloseConnection()
 {
   free(frame_buffer);

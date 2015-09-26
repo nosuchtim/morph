@@ -80,12 +80,14 @@ int main()
           event = "invalid";
           break;
         case SENSEL_EVENT_CONTACT_START:
+          senselSetLEDBrightness(id, 100); //turn on LED
           event = "start";
           break;
         case SENSEL_EVENT_CONTACT_MOVE:
           event = "move";
           break;
         case SENSEL_EVENT_CONTACT_END:
+          senselSetLEDBrightness(id, 0); //turn LED off
           event = "end";
           break;
         default:
