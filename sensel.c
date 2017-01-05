@@ -29,9 +29,9 @@
 #include <termios.h>
 #endif
 
-#define PT_FRAME              1
-#define PT_READ_ACK           6
-#define PT_WRITE_ACK          10
+#define PT_READ_ACK           1
+#define PT_RVS_ACK            3
+#define PT_WRITE_ACK          5
 
 bool _readReg(uint8 reg, uint8 size, uint8 *buf);
 bool _writeReg(uint8 reg, uint8 size, uint8 *buf);
@@ -79,6 +79,7 @@ bool _frameBufferEnsureCapacity(int capacity)
 bool _readReg(uint8 reg, uint8 size, uint8 *buf)
 {
   uint8 ack;
+  uint8 ack_reg;
   uint8 resp_checksum; uint16 resp_size;
   uint8 checksum = 0;
   int i;
@@ -98,6 +99,9 @@ bool _readReg(uint8 reg, uint8 size, uint8 *buf)
   {
     return false;
   }
+
+  if(!senselSerialReadBytes(&serial_data, (uint8 *)&ack_reg, 1))
+    return false;
 
   if(!senselSerialReadBytes(&serial_data, (uint8*)&resp_size, 2))
     return false;
@@ -122,6 +126,7 @@ bool _readReg(uint8 reg, uint8 size, uint8 *buf)
 bool _writeReg(uint8 reg, uint8 size, uint8 *buf)
 {
   uint8 ack; 
+  uint8 ack_reg;
   uint8 checksum = 0;
   int i;
 
@@ -144,6 +149,9 @@ bool _writeReg(uint8 reg, uint8 size, uint8 *buf)
     return false;
 
   if(!senselSerialReadBytes(&serial_data, &ack, 1))
+    return false;
+
+  if(!senselSerialReadBytes(&serial_data, &ack_reg, 1))
     return false;
 
   return (ack == PT_WRITE_ACK);
@@ -199,45 +207,54 @@ int senselReadContacts(contact_t * contacts)
   senselSerialWrite(&serial_data, (uint8 *)&read_cmd, 3);
 
   uint8 ack;
+  uint8 reg_ack;
+  uint8 header;
   if(!senselSerialReadBytes(&serial_data, &ack, 1))
   {
     printf("Failed to receive ack from sensor\n");
     return false;
   }
 
-  if(ack == PT_FRAME) // Non-buffered frame
+  if(!senselSerialReadBytes(&serial_data, &reg_ack, 1))
+  {
+    printf("Failed to receive reg_ack from sensor\n");
+    return false;
+  }
+
+  if(!senselSerialReadBytes(&serial_data, &header, 1))
+  {
+    printf("Failed to receive header from sensor\n");
+    return false;
+  }
+
+  if(ack == PT_RVS_ACK) // Non-buffered frame
   {
     if(!_senselReadContactFrame()) //Read contact frame into frame_buffer
       return false;
   }
   else
   {
-    printf("SENSEL ERROR: Received %d when expecting PT_FRAME.\n", ack);
+    printf("SENSEL ERROR: Received %d when expecting PT_RVS_ACK.\n", ack);
     return false;
   }
 
   //copy from frame_buffer into contacts
-  int num_contacts = frame_buffer[2];
+  int num_contacts = frame_buffer[7];
   int contact_buffer_size = num_contacts * sizeof(contact_raw_t);
 
-  memcpy(contacts_raw, &(frame_buffer[3]), contact_buffer_size);
+  memcpy(contacts_raw, &(frame_buffer[8]), contact_buffer_size);
 
   for(int i = 0; i < num_contacts; i++)
   {
-    contacts[i].total_force =         contacts_raw[i].total_force;
-    contacts[i].uid =                 contacts_raw[i].uid;
-    contacts[i].area =                contacts_raw[i].area;
-    contacts[i].x_pos_mm =            contacts_raw[i].x_pos * sensor_x_to_mm_factor;
-    contacts[i].y_pos_mm =            contacts_raw[i].y_pos * sensor_y_to_mm_factor;
-    contacts[i].dx =                  contacts_raw[i].dx;
-    contacts[i].dy =                  contacts_raw[i].dy;
-    contacts[i].orientation_degrees = contacts_raw[i].orientation / 256.0f;
-    contacts[i].major_axis_mm =       contacts_raw[i].major_axis * sensor_x_to_mm_factor;
-    contacts[i].minor_axis_mm =       contacts_raw[i].minor_axis * sensor_x_to_mm_factor;
-    contacts[i].peak_x =              contacts_raw[i].peak_x;
-    contacts[i].peak_y =              contacts_raw[i].peak_y;
     contacts[i].id =                  contacts_raw[i].id;
     contacts[i].type =                contacts_raw[i].type;
+    contacts[i].x_pos_mm =            contacts_raw[i].x_pos / MM_VALUE_SCALE;
+    contacts[i].y_pos_mm =            contacts_raw[i].y_pos / MM_VALUE_SCALE;
+    contacts[i].total_force =         contacts_raw[i].total_force / GRAM_VALUE_SCALE;
+    contacts[i].area =                contacts_raw[i].area;
+    contacts[i].orientation_degrees = contacts_raw[i].orientation / DEGREE_VALUE_SCALE;
+    contacts[i].major_axis_mm =       contacts_raw[i].major_axis / MM_VALUE_SCALE;
+    contacts[i].minor_axis_mm =       contacts_raw[i].minor_axis / MM_VALUE_SCALE;
   }
   
   return num_contacts;

@@ -23,6 +23,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/select.h>
 
 extern bool _readReg(uint8 reg, uint8 size, uint8 *buf);
 

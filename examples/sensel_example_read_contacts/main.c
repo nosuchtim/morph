@@ -69,7 +69,7 @@ int main()
   
     for(int i = 0; i < n_contacts; i++)
     {
-      int force = contacts[i].total_force;
+      float force = contacts[i].total_force;
       float x_mm = contacts[i].x_pos_mm;
       float y_mm = contacts[i].y_pos_mm;
       //Read out shape information (ellipses)
@@ -101,7 +101,7 @@ int main()
           event = "error";
       }
       
-      printf("Contact ID %d, event=%s, mm coord: (%f, %f), force=%d, " \
+      printf("Contact ID %d, event=%s, mm coord: (%f, %f), force=%f, " \
              "major=%f, minor=%f, orientation=%f\n", 
              id, event, x_mm, y_mm, force, major, minor, orientation);
     }
