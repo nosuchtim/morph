@@ -21,9 +21,6 @@
 #define DEFAULT_BOARD_ADDR 0x01
 
 #define MAX_CONTACTS 16 // // TODO: Read this from device
-#define MM_VALUE_SCALE 256.0f
-#define GRAM_VALUE_SCALE 8.0f
-#define DEGREE_VALUE_SCALE 16.0f
 
 #define SENSEL_EVENT_CONTACT_INVALID 0
 #define SENSEL_EVENT_CONTACT_START   1

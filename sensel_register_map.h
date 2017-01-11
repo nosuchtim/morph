@@ -41,6 +41,10 @@
 #define SENSEL_REG_BATTERY_PERCENTAGE                       0x71
 #define SENSEL_REG_POWER_BUTTON_PRESSED                     0x72
 #define SENSEL_REG_LED_BRIGHTNESS                           0x80
+#define SENSEL_REG_UNIT_SHIFT_DIMS                          0xA0
+#define SENSEL_REG_UNIT_SHIFT_FORCE                         0xA1
+#define SENSEL_REG_UNIT_SHIFT_AREA                          0xA2
+#define SENSEL_REG_UNIT_SHIFT_ANGLE                         0xA3
 #define SENSEL_REG_SOFT_RESET                               0xE0
 #define SENSEL_REG_ERROR_CODE                               0xEC
 #define SENSEL_REG_BATTERY_VOLTAGE_MV                       0xFE
