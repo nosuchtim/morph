@@ -46,6 +46,7 @@ static int frame_buffer_capacity = 0;
 
 static float sensel_shift_dims = 256.0f;
 static float sensel_shift_force = 8.0f;
+static float sensel_shift_area = 1.0f;
 static float sensel_shift_angle = 16.0f;
 
 contact_raw_t contacts_raw[MAX_CONTACTS];
@@ -248,7 +249,7 @@ int senselReadContacts(contact_t * contacts)
     contacts[i].x_pos_mm =            contacts_raw[i].x_pos / sensel_shift_dims;
     contacts[i].y_pos_mm =            contacts_raw[i].y_pos / sensel_shift_dims;
     contacts[i].total_force =         contacts_raw[i].total_force / sensel_shift_force;
-    contacts[i].area =                contacts_raw[i].area;
+    contacts[i].area =                contacts_raw[i].area / sensel_shift_area;
     contacts[i].orientation_degrees = contacts_raw[i].orientation / sensel_shift_angle;
     contacts[i].major_axis_mm =       contacts_raw[i].major_axis / sensel_shift_dims;
     contacts[i].minor_axis_mm =       contacts_raw[i].minor_axis / sensel_shift_dims;
@@ -286,6 +287,7 @@ bool senselOpenConnection(char* com_port)
     _readReg(SENSEL_REG_UNIT_SHIFT_DIMS, 4, buf);
     sensel_shift_dims = (float)(1 <<  buf[0]);
     sensel_shift_force = (float)(1 <<  buf[1]);
+		sensel_shift_area = (float)(1 << buf[2]);
     sensel_shift_angle = (float)(1 << buf[3]);
 
 
