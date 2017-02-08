@@ -7,7 +7,13 @@ SOURCE_DIR = .
 INCLUDE_DIR = 
 BUILD_DIR = build
 LIB_DIR = .
-LIBS = libSensel.so
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+    LIBS = ./libSensel.so
+endif
+ifeq ($(UNAME_S),Darwin)
+	LIBS = ./libSensel.dylib
+endif
 # Add user files here
 CXX_SOURCES = 
 C_SOURCES = main.c
@@ -20,8 +26,8 @@ INCLUDE_DIRS += -I $(SENSEL_DIR)
 OS := $(shell uname)
 
 OPTIMIZATIONS = -O3
-CXXFLAGS = ${DEFINES} ${OPTIMIZATIONS} -Wall -g  $(INCLUDE_DIRS) -Wl,-R,'$$ORIGIN'
-CFLAGS = ${DEFINES} ${OPTIMIZATIONS} -Wall -g -std=gnu99 $(INCLUDE_DIRS) -Wl,-R,'$$ORIGIN'
+CXXFLAGS = ${DEFINES} ${OPTIMIZATIONS} -Wall -g  $(INCLUDE_DIRS) 
+CFLAGS = ${DEFINES} ${OPTIMIZATIONS} -Wall -g -std=gnu99 $(INCLUDE_DIRS)
 
 # expands to list of object files
 CXX_OBJS = $(addprefix $(BUILD_DIR)/,$(CXX_SOURCES:.cpp=.o))
