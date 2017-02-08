@@ -17,7 +17,7 @@
  * Read Contacts
  * by Aaron Zarraga - Sensel, Inc
  * 
- * This opens a Sensel sensor, reads contact data, and prints the data to the console.
+ * This opens a Sensel sensor, reads frame data, and prints the data to the console.
  */
 
 //Inclue a sleep function
@@ -28,6 +28,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <signal.h> //so we can catch a ctrl+c key event
 #include "sensel.h"
 
@@ -35,6 +36,9 @@ volatile sig_atomic_t ctrl_c_requested = false;
 
 contact_t contacts[MAX_CONTACTS];
 int n_contacts = 0;
+sensel_decompress_info decompress_info;
+float *forces;
+uint8 *labels;
 
 void handle_ctrl_c(int sig)
 {
@@ -48,66 +52,34 @@ int main()
   bool sensel_sensor_opened = false;
 
   sensel_sensor_opened = senselOpenConnection(0);
-  
   if(!sensel_sensor_opened)
   {
     printf("Unable to open Sensel sensor!\n");
     return -1;
   }
-  
+	senselDecompressInit(senselReadCompressionMetadata(), &decompress_info);
+	forces = (float(*))malloc(sizeof(float) * decompress_info.decompressed_ncols * decompress_info.decompressed_nrows);
+	labels = (uint8(*))malloc(decompress_info.decompressed_ncols * decompress_info.decompressed_nrows);
   //Enable contact sending
-  senselSetFrameContentControl(SENSEL_FRAME_CONTENT_CONTACTS_MASK);
+  senselSetFrameContentControl( SENSEL_FRAME_CONTENT_PRESSURE_MASK | SENSEL_FRAME_CONTENT_LABELS_MASK);
   
   //Enable scanning
   senselStartScanning();
 
   printf("Touch sensor! (press ctrl-c to quit)...\n");
 
-  while(!ctrl_c_requested)
-  {
-    senselReadFrame(contacts, &n_contacts, NULL, NULL);
-  
-    for(int i = 0; i < n_contacts; i++)
-    {
-      float force = contacts[i].total_force;
-      float x_mm = contacts[i].x_pos_mm;
-      float y_mm = contacts[i].y_pos_mm;
-      //Read out shape information (ellipses)
-      float major = contacts[i].major_axis_mm;
-      float minor = contacts[i].minor_axis_mm;
-      float orientation = contacts[i].orientation_degrees;
+	while (!ctrl_c_requested)
+	{
+		senselReadFrame(contacts, &n_contacts, forces, labels);
 
-      int id = contacts[i].id;
-      int event_type = contacts[i].type;
-      
-      char* event;
-      switch (event_type)
-      {
-        case SENSEL_EVENT_CONTACT_INVALID:
-          event = "invalid";
-          break;
-        case SENSEL_EVENT_CONTACT_START:
-          senselSetLEDBrightness(id, 100); //turn on LED
-          event = "start";
-          break;
-        case SENSEL_EVENT_CONTACT_MOVE:
-          event = "move";
-          break;
-        case SENSEL_EVENT_CONTACT_END:
-          senselSetLEDBrightness(id, 0); //turn LED off
-          event = "end";
-          break;
-        default:
-          event = "error";
-      }
-      
-      printf("Contact ID %d, event=%s, mm coord: (%f, %f), force=%f, " \
-             "major=%f, minor=%f, orientation=%f\n", 
-             id, event, x_mm, y_mm, force, major, minor, orientation);
-    }
-    
-    if(n_contacts > 0)
-      printf("****\n");
+		for (int i = 0; i < decompress_info.decompressed_nrows; i++)
+		{
+			for (int j = 0; j < decompress_info.decompressed_ncols; j++) {
+				printf("%d ", (int)(forces[i*decompress_info.decompressed_ncols + j]));
+			}
+			printf("\n");
+		}
+		printf("\n\n\n\n");
   }
 
   printf("Closing application\n");

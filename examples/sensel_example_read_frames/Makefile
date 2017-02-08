@@ -1,5 +1,5 @@
 # Program name
-PROGRAM = sensel_example_read_contacts
+PROGRAM = sensel_example_read_frames
 
 # Setup directories here
 SENSEL_DIR = ../..

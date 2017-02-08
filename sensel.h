@@ -17,6 +17,7 @@
 #define SENSEL_H
 
 #include "sensel_types.h"
+#include "sensel_lib.h"
 
 #define DEFAULT_BOARD_ADDR 0x01
 
@@ -27,7 +28,10 @@
 #define SENSEL_EVENT_CONTACT_MOVE    2
 #define SENSEL_EVENT_CONTACT_END     3
 
-#define SENSEL_FRAME_CONTACTS_FLAG  0x04
+#define SENSEL_FRAME_CONTENT_PRESSURE_MASK  0x01
+#define SENSEL_FRAME_CONTENT_LABELS_MASK    0x02
+#define SENSEL_FRAME_CONTENT_CONTACTS_MASK  0x04
+#define SENSEL_FRAME_CONTENT_ACCEL_MASK     0x08
 
 #define SENSEL_MAGIC      "S3NS31"
 #define SENSEL_MAGIC_LEN  6
@@ -148,11 +152,12 @@ extern "C" {
   bool senselOpenConnection(char* com_port); // Pass in NULL to do auto-detection
   bool senselSetFrameContentControl(uint8 content);
   bool senselStartScanning();
-  int  senselReadContacts(contact_t *contacts);
+	void senselReadFrame(contact_t *contacts, int *n_contacts, float *forces, uint8 *labels);
   bool senselStopScanning();
   void senselCloseConnection();
   void senselSetLEDBrightness(int idx, uint8 brightness);
   void senselSetLEDBrightnessAll(uint8 brightness);
+	uint8* senselReadCompressionMetadata();
 
 #ifdef __cplusplus
 }
