@@ -51,6 +51,9 @@ static float sensel_shift_area = 1.0f;
 static float sensel_shift_angle = 16.0f;
 
 contact_raw_t contacts_raw[MAX_CONTACTS];
+contact_t contacts_units[MAX_CONTACTS];
+float *sensel_forces;
+uint8 *sensel_labels;
 
 uint8 sensel_compression_metadata[SENSEL_COMPRESSION_METADATA_LENGTH];
 
@@ -201,7 +204,7 @@ uint16 _senselReadFrameData()
 }
 
 
-void senselReadFrame(contact_t *contacts, int *n_contacts, float *forces, uint8 *labels)
+void senselReadFrame(contact_t **contacts, int *n_contacts, float **forces, uint8 **labels)
 {
   read_cmd.reg = SENSEL_REG_SCAN_READ_FRAME;
   read_cmd.size = 0;
@@ -245,7 +248,6 @@ void senselReadFrame(contact_t *contacts, int *n_contacts, float *forces, uint8 
 	int content_bit_mask = frame_buffer[0];
 	int offset = 6;
 	frame_len = frame_len - offset;
-  //copy from frame_buffer into contacts
 	if (content_bit_mask & SENSEL_FRAME_CONTENT_CONTACTS_MASK)
 	{
 		int num_contacts = frame_buffer[offset+1];
@@ -254,23 +256,26 @@ void senselReadFrame(contact_t *contacts, int *n_contacts, float *forces, uint8 
 		memcpy(contacts_raw, &(frame_buffer[offset+2]), contact_buffer_size);
 		for (int i = 0; i < num_contacts; i++)
 		{
-			contacts[i].id = contacts_raw[i].id;
-			contacts[i].type = contacts_raw[i].type;
-			contacts[i].x_pos_mm = contacts_raw[i].x_pos / sensel_shift_dims;
-			contacts[i].y_pos_mm = contacts_raw[i].y_pos / sensel_shift_dims;
-			contacts[i].total_force = contacts_raw[i].total_force / sensel_shift_force;
-			contacts[i].area = contacts_raw[i].area / sensel_shift_area;
-			contacts[i].orientation_degrees = contacts_raw[i].orientation / sensel_shift_angle;
-			contacts[i].major_axis_mm = contacts_raw[i].major_axis / sensel_shift_dims;
-			contacts[i].minor_axis_mm = contacts_raw[i].minor_axis / sensel_shift_dims;
+			contacts_units[i].id = contacts_raw[i].id;
+			contacts_units[i].type = contacts_raw[i].type;
+			contacts_units[i].x_pos_mm = contacts_raw[i].x_pos / sensel_shift_dims;
+			contacts_units[i].y_pos_mm = contacts_raw[i].y_pos / sensel_shift_dims;
+			contacts_units[i].total_force = contacts_raw[i].total_force / sensel_shift_force;
+			contacts_units[i].area = contacts_raw[i].area / sensel_shift_area;
+			contacts_units[i].orientation_degrees = contacts_raw[i].orientation / sensel_shift_angle;
+			contacts_units[i].major_axis_mm = contacts_raw[i].major_axis / sensel_shift_dims;
+			contacts_units[i].minor_axis_mm = contacts_raw[i].minor_axis / sensel_shift_dims;
 		}
-		offset = offset + contact_buffer_size + 1;
+		offset = offset + contact_buffer_size + 2;
 		frame_len = frame_len - offset;
+		*contacts = contacts_units;
 		*n_contacts = num_contacts;
 	}
 	if (content_bit_mask & SENSEL_FRAME_CONTENT_PRESSURE_MASK)
 	{
-		senselDecompressFrame(&frame_buffer[offset], frame_len, forces, labels);
+		senselDecompressFrame(&frame_buffer[offset], frame_len, sensel_forces, sensel_labels);
+		*forces = sensel_forces;
+		*labels = sensel_labels;
 	}
 }
 
@@ -288,7 +293,18 @@ bool senselStopScanning(void)
 
 bool senselSetFrameContentControl(uint8 content)
 {
-  return _writeReg(SENSEL_REG_SCAN_CONTENT_CONTROL, 1, &content);
+
+	if (content & SENSEL_FRAME_CONTENT_PRESSURE_MASK) {
+		//Init sensel frame decompression 
+		int metadata_length = senselReadRegVS(SENSEL_REG_COMPRESSION_METADATA, sensel_compression_metadata);
+		senselDecompressInit(sensel_compression_metadata, metadata_length);
+		int decompressed_cols = senselDecompressGetCols();
+		int decompressed_rows = senselDecompressGetRows();
+
+		sensel_forces = (float(*))malloc(sizeof(float) * decompressed_cols * decompressed_rows);
+		sensel_labels = (uint8(*))malloc(decompressed_cols * decompressed_rows);
+	}
+	return _writeReg(SENSEL_REG_SCAN_CONTENT_CONTROL, 1, &content);
 }
 
 bool senselOpenConnection(char* com_port)
@@ -390,10 +406,4 @@ int senselReadRegVS(uint8 reg, uint8 *buf)
 		printf("Unable to read RVS checksum\n");
 
 	return read_size_buf;
-}
-
-uint8* senselReadCompressionMetadata()
-{
-	senselReadRegVS(SENSEL_REG_COMPRESSION_METADATA, sensel_compression_metadata);
-	return sensel_compression_metadata;
 }

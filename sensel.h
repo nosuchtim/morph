@@ -152,12 +152,11 @@ extern "C" {
   bool senselOpenConnection(char* com_port); // Pass in NULL to do auto-detection
   bool senselSetFrameContentControl(uint8 content);
   bool senselStartScanning();
-	void senselReadFrame(contact_t *contacts, int *n_contacts, float *forces, uint8 *labels);
+	void senselReadFrame(contact_t **contacts, int *n_contacts, float **forces, uint8 **labels);
   bool senselStopScanning();
   void senselCloseConnection();
   void senselSetLEDBrightness(int idx, uint8 brightness);
   void senselSetLEDBrightnessAll(uint8 brightness);
-	uint8* senselReadCompressionMetadata();
 
 #ifdef __cplusplus
 }

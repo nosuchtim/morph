@@ -33,7 +33,7 @@
 
 volatile sig_atomic_t ctrl_c_requested = false;
 
-contact_t contacts[MAX_CONTACTS];
+contact_t *contacts;
 int n_contacts = 0;
 
 void handle_ctrl_c(int sig)
@@ -65,7 +65,7 @@ int main()
 
   while(!ctrl_c_requested)
   {
-    senselReadFrame(contacts, &n_contacts, NULL, NULL);
+    senselReadFrame(&contacts, &n_contacts, NULL, NULL);
   
     for(int i = 0; i < n_contacts; i++)
     {

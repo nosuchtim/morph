@@ -34,11 +34,14 @@
 
 volatile sig_atomic_t ctrl_c_requested = false;
 
-contact_t contacts[MAX_CONTACTS];
+contact_t *contacts;
 int n_contacts = 0;
-sensel_decompress_info decompress_info;
 float *forces;
 uint8 *labels;
+uint8* metadata;
+int metadata_length = 0;
+int decompressed_cols = 0;
+int decompressed_rows = 0;
 
 void handle_ctrl_c(int sig)
 {
@@ -57,12 +60,12 @@ int main()
     printf("Unable to open Sensel sensor!\n");
     return -1;
   }
-	senselDecompressInit(senselReadCompressionMetadata(), &decompress_info);
-	forces = (float(*))malloc(sizeof(float) * decompress_info.decompressed_ncols * decompress_info.decompressed_nrows);
-	labels = (uint8(*))malloc(decompress_info.decompressed_ncols * decompress_info.decompressed_nrows);
-  //Enable contact sending
-  senselSetFrameContentControl( SENSEL_FRAME_CONTENT_PRESSURE_MASK | SENSEL_FRAME_CONTENT_LABELS_MASK);
+
+  //Enable frames and labels
+  senselSetFrameContentControl(SENSEL_FRAME_CONTENT_PRESSURE_MASK | SENSEL_FRAME_CONTENT_LABELS_MASK);
   
+	decompressed_cols = senselDecompressGetCols();
+	decompressed_rows = senselDecompressGetRows();
   //Enable scanning
   senselStartScanning();
 
@@ -70,12 +73,12 @@ int main()
 
 	while (!ctrl_c_requested)
 	{
-		senselReadFrame(contacts, &n_contacts, forces, labels);
+		senselReadFrame(&contacts, &n_contacts, &forces, &labels);
 
-		for (int i = 0; i < decompress_info.decompressed_nrows; i++)
+		for (int i = 0; i < decompressed_rows; i++)
 		{
-			for (int j = 0; j < decompress_info.decompressed_ncols; j++) {
-				printf("%d ", (int)(forces[i*decompress_info.decompressed_ncols + j]));
+			for (int j = 0; j < decompressed_cols; j++) {
+				printf("%d ", (int)(forces[i*decompressed_cols + j]));
 			}
 			printf("\n");
 		}

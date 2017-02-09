@@ -25,15 +25,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-	typedef struct
-	{
-		int decompressed_ncols;
-		int decompressed_nrows;
-	} sensel_decompress_info;
 
-	SENSEL_LIB void WINAPI senselDecompressInit(unsigned char* metadata, sensel_decompress_info* info);
+	SENSEL_LIB int WINAPI senselDecompressInit(unsigned char* metadata, int metadata_size);
 
-	SENSEL_LIB void WINAPI senselDecompressFrame(unsigned char* frame_data, int data_size, float* force_data, unsigned char* contact_id_data);
+	SENSEL_LIB int WINAPI senselDecompressGetCols();
+
+	SENSEL_LIB int WINAPI senselDecompressGetRows();
+
+	SENSEL_LIB int WINAPI senselDecompressFrame(unsigned char* frame_data, int data_size, float* force_array, unsigned char* label_array);
+
 #ifdef __cplusplus
 }
 #endif
