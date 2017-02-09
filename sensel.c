@@ -161,6 +161,34 @@ bool _writeReg(uint8 reg, uint8 size, uint8 *buf)
   return (ack == PT_WRITE_ACK);
 }
 
+int senselReadRegVS(uint8 reg, uint8 *buf)
+{
+	uint16 read_size_buf;
+	uint8 ack[3];
+	uint8 checksum;
+
+	read_cmd.reg = reg;
+	read_cmd.size = 0;
+
+	if (!senselSerialWrite(&serial_data, (uint8 *)&(read_cmd), 3))
+		return false;
+
+	if (!senselSerialReadBytes(&serial_data, (uint8 *)&(ack), 3))
+		printf("Unable to read RVS ack\n");
+
+	if (!senselSerialReadBytes(&serial_data, (uint8 *)&(read_size_buf), 2))
+		printf("Unable to read RVS size\n");
+
+	//printf("Read RVS of size: %d\n", read_size_buf);
+
+	senselSerialReadBytes(&serial_data, buf, read_size_buf);
+
+	if (!senselSerialReadBytes(&serial_data, (uint8 *)&(checksum), 1))
+		printf("Unable to read RVS checksum\n");
+
+	return read_size_buf;
+}
+
 uint16 _senselReadFrameData()
 {
   uint16 payload_size;
@@ -296,7 +324,7 @@ bool senselSetFrameContentControl(uint8 content)
 
 	if (content & SENSEL_FRAME_CONTENT_PRESSURE_MASK) {
 		//Init sensel frame decompression 
-		int metadata_length = senselReadRegVS(SENSEL_REG_COMPRESSION_METADATA, sensel_compression_metadata);
+		int metadata_length = senselReadRegVS(SENSEL_REG_COMPRESSION_METADATA, (uint8*)(sensel_compression_metadata));
 		senselDecompressInit(sensel_compression_metadata, metadata_length);
 		int decompressed_cols = senselDecompressGetCols();
 		int decompressed_rows = senselDecompressGetRows();
@@ -378,32 +406,4 @@ void senselCloseConnection()
 {
   free(frame_buffer);
   senselSerialClose(&serial_data);
-}
-
-int senselReadRegVS(uint8 reg, uint8 *buf)
-{
-	uint16 read_size_buf;
-	uint8 ack[3];
-	uint8 checksum;
-
-	read_cmd.reg = reg;
-	read_cmd.size = 0;
-
-	if (!senselSerialWrite(&serial_data, (uint8 *)&(read_cmd), 3))
-		return false;
-
-	if (!senselSerialReadBytes(&serial_data, (uint8 *)&(ack), 3))
-		printf("Unable to read RVS ack\n");
-
-	if (!senselSerialReadBytes(&serial_data, (uint8 *)&(read_size_buf), 2))
-		printf("Unable to read RVS size\n");
-
-	//printf("Read RVS of size: %d\n", read_size_buf);
-
-	senselSerialReadBytes(&serial_data, buf, read_size_buf);
-
-	if (!senselSerialReadBytes(&serial_data, (uint8 *)&(checksum), 1))
-		printf("Unable to read RVS checksum\n");
-
-	return read_size_buf;
 }
