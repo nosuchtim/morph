@@ -5,7 +5,7 @@ This API allows users to communicate with a Sensel device through C or C++. This
 ##Setup
 Clone this Github project and move all of the sensel* files into your project to build against. Note: if you are on windows, you do not need sensel_serial_linux.c and if you are on Linux/Mac, you do not need sensel_serial_win.cpp.
 
-Make sure to look at the sensel_example_read_contacts project under the examples folder to see how to setup your project. On Linux/Mac, simply navigate to this project and type in "make" to build the executable. On Windows, you will want to open up the read_contacts_win.sln file in Visual Studio and build the project from there. Note: this project was created with Visual Studio 2013.
+Make sure to look at the sensel_example_read_contacts or sensel_example_read_frames project under the examples folder to see how to setup your project. On Linux/Mac, simply navigate to this project and type in "make" to build the executable. On Windows, you will want to open up the read_contacts_win.sln or read_frame_win.sln file in Visual Studio and build the project from there. Note: this project was created with Visual Studio 2013.
 
 ##Usage
 Here's a high-level view of how to use this API:
@@ -16,7 +16,7 @@ First, we need to import Sensel:
 #include "sensel.h"
 ```
 
-Next, we need to properly setup the sensor. We first call `senselOpenConnection()`, which returns true if we successfully connect to a Sensel device. If we connect to a sensor, we need to tell the sensor to send us contacts. We use the method `senselSetFrameContentControl()`, and pass in the `SENSEL_FRAME_CONTACTS_FLAG` constant. After this, we tell the sensor to start scanning by calling `senselStartScanning()`:
+Next, we need to properly setup the sensor. We first call `senselOpenConnection()`, which returns true if we successfully connect to a Sensel device. If we connect to a sensor, we need to tell the sensor to send us contacts. We use the method `senselSetFrameContentControl()`, and pass in a frame content constant: `SENSEL_FRAME_CONTACTS_FLAG` `SENSEL_FRAME_PRESSURE_FLAG` and/or `SENSEL_FRAME_LABELS_FLAG`. To recieve multipe frame content, perform a bitwise or '|' of the frame content flags. After this, we tell the sensor to start scanning by calling `senselStartScanning()`:
 
 ```c++
 //Open Sensor
@@ -35,16 +35,19 @@ senselSetFrameContentControl(SENSEL_FRAME_CONTACTS_FLAG);
 senselStartScanning();
 ```
 
-Next, you can read out contacts in your program's main event loop with `senselReadContacts()`. This returns an array of contacts.
+Next, you can read out frame content in your program's main event loop with `senselReadFrame`.
 
 ```c++
-//Declare contacts array and variable to hold number of valid contacts
-contact_t contacts[MAX_CONTACTS];
+//Declare contacts array pointer and variable to hold number of valid contacts
+contact_t *contacts;
 int n_contacts = 0;
+//Declare float array pointer for forces and uint8 array pointer for labels.
+float *forces;
+uint8 *labels;
 
 while(true)
 {
-  n_contacts = senselReadContacts(contacts);
+  senselReadFrame(&contacts, &n_contacts, &forces, &labels); 
   if(n_contacts != 0) //Check for contacts
     //USE CONTACT DATA HERE
 }

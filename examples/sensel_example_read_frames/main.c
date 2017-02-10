@@ -38,8 +38,6 @@ contact_t *contacts;
 int n_contacts = 0;
 float *forces;
 uint8 *labels;
-uint8* metadata;
-int metadata_length = 0;
 int decompressed_cols = 0;
 int decompressed_rows = 0;
 
