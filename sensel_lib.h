@@ -22,6 +22,17 @@
 #define SENSEL_LIB
 #define WINAPI
 #endif
+
+#define SENSEL_LIB_VERSION_MAJOR 0
+#define SENSEL_LIB_VERSION_MINOR 5
+
+#define SENSEL_LIB_ERROR_NONE 0
+#define SENSEL_LIB_ERROR_DATA_LENGTH 1
+#define SENSEL_LIB_ERROR_FORCES 2
+#define SENSEL_LIB_ERROR_LABELS 4
+#define SENSEL_LIB_ERROR_INIT 8
+#define SENSEL_LIB_ERROR_MALLOC 16
+
 #ifdef __cplusplus
 extern "C" {
 #endif

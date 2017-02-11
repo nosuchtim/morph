@@ -48,6 +48,7 @@ void handle_ctrl_c(int sig)
 
 int main()
 {
+	float total_force;
   signal (SIGINT, handle_ctrl_c);
 
   bool sensel_sensor_opened = false;
@@ -71,16 +72,16 @@ int main()
 
 	while (!ctrl_c_requested)
 	{
+		total_force = 0;
 		senselReadFrame(&contacts, &n_contacts, &forces, &labels);
 
 		for (int i = 0; i < decompressed_rows; i++)
 		{
 			for (int j = 0; j < decompressed_cols; j++) {
-				printf("%d ", (int)(forces[i*decompressed_cols + j]));
+				total_force = total_force + (forces[i*decompressed_cols + j]);
 			}
-			printf("\n");
 		}
-		printf("\n\n\n\n");
+		printf("Total Force: %f\n", total_force);
   }
 
   printf("Closing application\n");
