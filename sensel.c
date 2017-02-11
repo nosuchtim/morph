@@ -29,10 +29,11 @@
 #include <termios.h>
 #endif
 
-#define PT_FRAME              1
-#define PT_READ_ACK           6
-#define PT_WRITE_ACK          10
+#define PT_READ_ACK           1
+#define PT_RVS_ACK            3
+#define PT_WRITE_ACK          5
 
+#define SENSEL_COMPRESSION_METADATA_LENGTH 6
 bool _readReg(uint8 reg, uint8 size, uint8 *buf);
 bool _writeReg(uint8 reg, uint8 size, uint8 *buf);
 
@@ -44,14 +45,17 @@ static sensel_serial_data serial_data;
 static uint8* frame_buffer = NULL;
 static int frame_buffer_capacity = 0;
 
-static int    sensor_max_x;
-static int    sensor_max_y;
-static float  sensor_width_mm;
-static float  sensor_height_mm;
-static float  sensor_x_to_mm_factor;
-static float  sensor_y_to_mm_factor;
+static float sensel_shift_dims = 256.0f;
+static float sensel_shift_force = 8.0f;
+static float sensel_shift_area = 1.0f;
+static float sensel_shift_angle = 16.0f;
 
 contact_raw_t contacts_raw[MAX_CONTACTS];
+contact_t contacts_units[MAX_CONTACTS];
+float *sensel_forces;
+uint8 *sensel_labels;
+
+uint8 sensel_compression_metadata[SENSEL_COMPRESSION_METADATA_LENGTH];
 
 bool _frameBufferEnsureCapacity(int capacity)
 {
@@ -79,6 +83,7 @@ bool _frameBufferEnsureCapacity(int capacity)
 bool _readReg(uint8 reg, uint8 size, uint8 *buf)
 {
   uint8 ack;
+  uint8 ack_reg;
   uint8 resp_checksum; uint16 resp_size;
   uint8 checksum = 0;
   int i;
@@ -98,6 +103,9 @@ bool _readReg(uint8 reg, uint8 size, uint8 *buf)
   {
     return false;
   }
+
+  if(!senselSerialReadBytes(&serial_data, (uint8 *)&ack_reg, 1))
+    return false;
 
   if(!senselSerialReadBytes(&serial_data, (uint8*)&resp_size, 2))
     return false;
@@ -122,6 +130,7 @@ bool _readReg(uint8 reg, uint8 size, uint8 *buf)
 bool _writeReg(uint8 reg, uint8 size, uint8 *buf)
 {
   uint8 ack; 
+  uint8 ack_reg;
   uint8 checksum = 0;
   int i;
 
@@ -146,10 +155,41 @@ bool _writeReg(uint8 reg, uint8 size, uint8 *buf)
   if(!senselSerialReadBytes(&serial_data, &ack, 1))
     return false;
 
+  if(!senselSerialReadBytes(&serial_data, &ack_reg, 1))
+    return false;
+
   return (ack == PT_WRITE_ACK);
 }
 
-bool _senselReadContactFrame()
+int senselReadRegVS(uint8 reg, uint8 *buf)
+{
+	uint16 read_size_buf;
+	uint8 ack[3];
+	uint8 checksum;
+
+	read_cmd.reg = reg;
+	read_cmd.size = 0;
+
+	if (!senselSerialWrite(&serial_data, (uint8 *)&(read_cmd), 3))
+		return false;
+
+	if (!senselSerialReadBytes(&serial_data, (uint8 *)&(ack), 3))
+		printf("Unable to read RVS ack\n");
+
+	if (!senselSerialReadBytes(&serial_data, (uint8 *)&(read_size_buf), 2))
+		printf("Unable to read RVS size\n");
+
+	//printf("Read RVS of size: %d\n", read_size_buf);
+
+	senselSerialReadBytes(&serial_data, buf, read_size_buf);
+
+	if (!senselSerialReadBytes(&serial_data, (uint8 *)&(checksum), 1))
+		printf("Unable to read RVS checksum\n");
+
+	return read_size_buf;
+}
+
+uint16 _senselReadFrameData()
 {
   uint16 payload_size;
   uint8 checksum;
@@ -158,7 +198,7 @@ bool _senselReadContactFrame()
   if(!senselSerialReadBytes(&serial_data, (uint8 *)&payload_size, 2))
   {
     printf("SENSEL ERROR: Unable to read packet size\n");
-    return false;
+    return 0;
   }
 
   // Allocate enough space for the size, the data and the checksum
@@ -166,13 +206,13 @@ bool _senselReadContactFrame()
   if(!_frameBufferEnsureCapacity(((int)payload_size)+3))
   {
     printf("SENSEL ERROR: Unable to allocate buffer\n");
-    return false;
+    return 0;
   }
 
   if(!senselSerialReadBytes(&serial_data, frame_buffer, payload_size + 1)) //read checksum as well
   {
     printf("SENSEL ERROR: Unable to read frame!\n");
-    return false;
+    return 0;
   }
 
   checksum = 0;
@@ -185,62 +225,86 @@ bool _senselReadContactFrame()
   if(checksum != received_checksum)
   {
     printf("SENSEL ERROR: Checksum failed! (%d != %d) Dumping the buffer.\n", checksum, received_checksum);
-    return false;
+    return 0;
   }
 
-  return true;
+  return payload_size;
 }
 
 
-int senselReadContacts(contact_t * contacts)
+void senselReadFrame(contact_t **contacts, int *n_contacts, float **forces, uint8 **labels)
 {
   read_cmd.reg = SENSEL_REG_SCAN_READ_FRAME;
   read_cmd.size = 0;
   senselSerialWrite(&serial_data, (uint8 *)&read_cmd, 3);
+	*n_contacts = 0;
 
   uint8 ack;
-  if(!senselSerialReadBytes(&serial_data, &ack, 1))
+  uint8 reg_ack;
+  uint8 header;
+	uint16 frame_len = 0;
+  if(!senselSerialReadBytes(&serial_data, (uint8 *)&ack, 1))
   {
     printf("Failed to receive ack from sensor\n");
-    return false;
+    return;
   }
 
-  if(ack == PT_FRAME) // Non-buffered frame
+  if(!senselSerialReadBytes(&serial_data, (uint8 *)&reg_ack, 1))
   {
-    if(!_senselReadContactFrame()) //Read contact frame into frame_buffer
-      return false;
+    printf("Failed to receive reg_ack from sensor\n");
+    return;
+  }
+
+  if(!senselSerialReadBytes(&serial_data, (uint8 *)&header, 1))
+  {
+    printf("Failed to receive header from sensor\n");
+    return;
+  }
+
+  if(ack == PT_RVS_ACK) // Non-buffered frame
+  {
+		frame_len = _senselReadFrameData(); //Read frame into frame_buffer
+		if(frame_len == 0)
+      return;
   }
   else
   {
-    printf("SENSEL ERROR: Received %d when expecting PT_FRAME.\n", ack);
-    return false;
+    printf("SENSEL ERROR: Received %d when expecting PT_RVS_ACK.\n", ack);
+    return;
   }
 
-  //copy from frame_buffer into contacts
-  int num_contacts = frame_buffer[2];
-  int contact_buffer_size = num_contacts * sizeof(contact_raw_t);
+	int content_bit_mask = frame_buffer[0];
+	int offset = 6;
+	frame_len = frame_len - offset;
+	if (content_bit_mask & SENSEL_FRAME_CONTENT_CONTACTS_MASK)
+	{
+		int num_contacts = frame_buffer[offset+1];
+		int contact_buffer_size = num_contacts * sizeof(contact_raw_t);
 
-  memcpy(contacts_raw, &(frame_buffer[3]), contact_buffer_size);
-
-  for(int i = 0; i < num_contacts; i++)
-  {
-    contacts[i].total_force =         contacts_raw[i].total_force;
-    contacts[i].uid =                 contacts_raw[i].uid;
-    contacts[i].area =                contacts_raw[i].area;
-    contacts[i].x_pos_mm =            contacts_raw[i].x_pos * sensor_x_to_mm_factor;
-    contacts[i].y_pos_mm =            contacts_raw[i].y_pos * sensor_y_to_mm_factor;
-    contacts[i].dx =                  contacts_raw[i].dx;
-    contacts[i].dy =                  contacts_raw[i].dy;
-    contacts[i].orientation_degrees = contacts_raw[i].orientation / 256.0f;
-    contacts[i].major_axis_mm =       contacts_raw[i].major_axis * sensor_x_to_mm_factor;
-    contacts[i].minor_axis_mm =       contacts_raw[i].minor_axis * sensor_x_to_mm_factor;
-    contacts[i].peak_x =              contacts_raw[i].peak_x;
-    contacts[i].peak_y =              contacts_raw[i].peak_y;
-    contacts[i].id =                  contacts_raw[i].id;
-    contacts[i].type =                contacts_raw[i].type;
-  }
-  
-  return num_contacts;
+		memcpy(contacts_raw, &(frame_buffer[offset+2]), contact_buffer_size);
+		for (int i = 0; i < num_contacts; i++)
+		{
+			contacts_units[i].id = contacts_raw[i].id;
+			contacts_units[i].type = contacts_raw[i].type;
+			contacts_units[i].x_pos_mm = contacts_raw[i].x_pos / sensel_shift_dims;
+			contacts_units[i].y_pos_mm = contacts_raw[i].y_pos / sensel_shift_dims;
+			contacts_units[i].total_force = contacts_raw[i].total_force / sensel_shift_force;
+			contacts_units[i].area = contacts_raw[i].area / sensel_shift_area;
+			contacts_units[i].orientation_degrees = contacts_raw[i].orientation / sensel_shift_angle;
+			contacts_units[i].major_axis_mm = contacts_raw[i].major_axis / sensel_shift_dims;
+			contacts_units[i].minor_axis_mm = contacts_raw[i].minor_axis / sensel_shift_dims;
+		}
+		offset = offset + contact_buffer_size + 2;
+		frame_len = frame_len - offset;
+		*contacts = contacts_units;
+		*n_contacts = num_contacts;
+	}
+	if (content_bit_mask & SENSEL_FRAME_CONTENT_PRESSURE_MASK)
+	{
+		senselDecompressFrame(&frame_buffer[offset], frame_len, sensel_forces, sensel_labels);
+		*forces = sensel_forces;
+		*labels = sensel_labels;
+	}
 }
 
 bool senselStartScanning()
@@ -257,7 +321,18 @@ bool senselStopScanning(void)
 
 bool senselSetFrameContentControl(uint8 content)
 {
-  return _writeReg(SENSEL_REG_SCAN_CONTENT_CONTROL, 1, &content);
+
+	if (content & SENSEL_FRAME_CONTENT_PRESSURE_MASK) {
+		//Init sensel frame decompression 
+		int metadata_length = senselReadRegVS(SENSEL_REG_COMPRESSION_METADATA, (uint8*)(sensel_compression_metadata));
+		senselDecompressInit(sensel_compression_metadata, metadata_length);
+		int decompressed_cols = senselDecompressGetCols();
+		int decompressed_rows = senselDecompressGetRows();
+
+		sensel_forces = (float(*))malloc(sizeof(float) * decompressed_cols * decompressed_rows);
+		sensel_labels = (uint8(*))malloc(decompressed_cols * decompressed_rows);
+	}
+	return _writeReg(SENSEL_REG_SCAN_CONTENT_CONTROL, 1, &content);
 }
 
 bool senselOpenConnection(char* com_port)
@@ -267,25 +342,14 @@ bool senselOpenConnection(char* com_port)
     frame_buffer = (uint8*)malloc(FRAME_BUFFER_INITIAL_CAPACITY*sizeof(uint8));
     frame_buffer_capacity = FRAME_BUFFER_INITIAL_CAPACITY*sizeof(uint8);
 
-    uint8 buf[2];
+    uint8 buf[4];
 
-    //Read in max X and max Y values
-    _readReg(0x10, 2, buf);
-    sensor_max_x = (256 * (buf[0] - 1));
-    sensor_max_y = (256 * (buf[1] - 1));
+    _readReg(SENSEL_REG_UNIT_SHIFT_DIMS, 4, buf);
+    sensel_shift_dims = (float)(1 <<  buf[0]);
+    sensel_shift_force = (float)(1 <<  buf[1]);
+		sensel_shift_area = (float)(1 << buf[2]);
+    sensel_shift_angle = (float)(1 << buf[3]);
 
-    uint32 sensor_width_um;
-    uint32 sensor_height_um;
-
-    //Read in active area dimensions
-    _readReg(SENSEL_REG_SENSOR_ACTIVE_AREA_WIDTH_UM,  4, (uint8 *)&sensor_width_um);
-    _readReg(SENSEL_REG_SENSOR_ACTIVE_AREA_HEIGHT_UM, 4, (uint8 *)&sensor_height_um);
-
-    sensor_width_mm = sensor_width_um / 1000.0;
-    sensor_height_mm = sensor_height_um / 1000.0;
-
-    sensor_x_to_mm_factor = sensor_width_mm / sensor_max_x;
-    sensor_y_to_mm_factor = sensor_height_mm / sensor_max_y;
 
     return true;
   }

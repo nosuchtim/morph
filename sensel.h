@@ -17,6 +17,7 @@
 #define SENSEL_H
 
 #include "sensel_types.h"
+#include "sensel_lib.h"
 
 #define DEFAULT_BOARD_ADDR 0x01
 
@@ -27,7 +28,10 @@
 #define SENSEL_EVENT_CONTACT_MOVE    2
 #define SENSEL_EVENT_CONTACT_END     3
 
-#define SENSEL_FRAME_CONTACTS_FLAG  0x04
+#define SENSEL_FRAME_CONTENT_PRESSURE_MASK  0x01
+#define SENSEL_FRAME_CONTENT_LABELS_MASK    0x02
+#define SENSEL_FRAME_CONTENT_CONTACTS_MASK  0x04
+#define SENSEL_FRAME_CONTENT_ACCEL_MASK     0x08
 
 #define SENSEL_MAGIC      "S3NS31"
 #define SENSEL_MAGIC_LEN  6
@@ -92,40 +96,30 @@ extern "C" {
   PACK(
   typedef struct
   {
-    uint32 total_force;
-    uid_t  uid;
-    uint32 area;  // area multiplied by 65536
+    label_t id;
+    contact_type_t type;
     float x_pos_mm; // x position in mm
     float y_pos_mm; // y position in mm
-    vel_t dx; // change in x from last frame
-    vel_t dy; // change in y from last frame
-    float orientation_degrees; // angle from -90 to 90 degrees
+    float total_force;
+    uint16 area; 
+    float orientation_degrees; 
     float major_axis_mm; // length of the major axis in mm
     float minor_axis_mm; // length of the minor axis in mm
-    grid_coord_t peak_x;
-    grid_coord_t peak_y;
-    label_t id; // TODO: The type of this should be something like contact_id
-    contact_type_t type;
   },
   contact_t);
 
   PACK(
   typedef struct
   {
-    uint32 total_force;
-    uid_t  uid;
-    uint32 area;  // area multiplied by 65536
-    uint16 x_pos;  // raw x position
-    uint16 y_pos;  // raw y position
-    vel_t dx; // change in x from last frame
-    vel_t dy; // change in y from last frame
-    int16 orientation; // angle from -90 to 90 multiplied by 256
-    uint16 major_axis; // length of the major axis multiplied by 256
-    uint16 minor_axis; // length of the minor axis multiplied by 256
-    grid_coord_t peak_x;
-    grid_coord_t peak_y;
     label_t id; // TODO: The type of this should be something like contact_id
     contact_type_t type;
+    uint16 x_pos;  // raw x position
+    uint16 y_pos;  // raw y position
+    uint16 total_force;
+    uint16 area;  // area multiplied by 65536
+    int16 orientation; // angle from -90 to 90 multiplied by 16
+    uint16 major_axis; // length of the major axis multiplied by 256
+    uint16 minor_axis; // length of the minor axis multiplied by 256
   },
   contact_raw_t);
 
@@ -158,7 +152,7 @@ extern "C" {
   bool senselOpenConnection(char* com_port); // Pass in NULL to do auto-detection
   bool senselSetFrameContentControl(uint8 content);
   bool senselStartScanning();
-  int  senselReadContacts(contact_t *contacts);
+	void senselReadFrame(contact_t **contacts, int *n_contacts, float **forces, uint8 **labels);
   bool senselStopScanning();
   void senselCloseConnection();
   void senselSetLEDBrightness(int idx, uint8 brightness);

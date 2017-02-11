@@ -1,5 +1,5 @@
 # Program name
-PROGRAM = sensel_example_read_contacts
+PROGRAM = sensel_example_read_frames
 
 # Setup directories here
 SENSEL_DIR = ../..
@@ -27,7 +27,7 @@ OS := $(shell uname)
 
 OPTIMIZATIONS = -O3
 CXXFLAGS = ${DEFINES} ${OPTIMIZATIONS} -Wall -g  $(INCLUDE_DIRS) 
-CFLAGS = ${DEFINES} ${OPTIMIZATIONS} -Wall -g -std=gnu99 $(INCLUDE_DIRS)
+CFLAGS = ${DEFINES} ${OPTIMIZATIONS} -Wall -g -std=gnu99 $(INCLUDE_DIRS) 
 
 # expands to list of object files
 CXX_OBJS = $(addprefix $(BUILD_DIR)/,$(CXX_SOURCES:.cpp=.o))
