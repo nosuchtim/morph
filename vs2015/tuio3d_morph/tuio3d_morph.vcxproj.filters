@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source Files\morph">
+      <UniqueIdentifier>{42cd013e-e537-45c1-b267-adefdb761f7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\morph">
+      <UniqueIdentifier>{6b54fb5d-8a0a-44d1-977b-f97784c8309c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\morph\morph.cpp">
+      <Filter>Source Files\morph</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\morph\main.cpp">
+      <Filter>Source Files\morph</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sensel-api-c-cpp\sensel.c">
+      <Filter>Source Files\morph</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sensel-api-c-cpp\sensel_serial_win.cpp">
+      <Filter>Source Files\morph</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\morph\morph.h">
+      <Filter>Header Files\morph</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

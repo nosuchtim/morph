@@ -1,0 +1,124 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{3BB2675F-F573-48C7-A133-F5D0D550917E}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>tuio3d_lib</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level2</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>false</SDLCheck>
+      <AdditionalIncludeDirectories>..\..\TUIO;..\..\oscpack;..\..\misc;..\..\igesture;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderFile />
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\misc\mmtt_sharedmem.h" />
+    <ClInclude Include="..\..\misc\NosuchDebug.h" />
+    <ClInclude Include="..\..\misc\NosuchException.h" />
+    <ClInclude Include="..\..\misc\NosuchUtil.h" />
+    <ClInclude Include="..\..\misc\porttime.h" />
+    <ClInclude Include="..\..\misc\xgetopt.h" />
+    <ClInclude Include="..\..\oscpack\ip\NetworkingUtils.h" />
+    <ClInclude Include="..\..\oscpack\ip\TimerListener.h" />
+    <ClInclude Include="..\..\oscpack\ip\UdpSocket.h" />
+    <ClInclude Include="..\..\oscpack\osc\OscException.h" />
+    <ClInclude Include="..\..\oscpack\osc\OscHostEndianness.h" />
+    <ClInclude Include="..\..\oscpack\osc\OscOutboundPacketStream.h" />
+    <ClInclude Include="..\..\oscpack\osc\OscPacketListener.h" />
+    <ClInclude Include="..\..\oscpack\osc\OscTypes.h" />
+    <ClInclude Include="..\..\tuio\TuioContainer.h" />
+    <ClInclude Include="..\..\tuio\TuioCursor.h" />
+    <ClInclude Include="..\..\tuio\TuioDevice.h" />
+    <ClInclude Include="..\..\tuio\TuioListener.h" />
+    <ClInclude Include="..\..\tuio\TuioPoint.h" />
+    <ClInclude Include="..\..\tuio\TuioServer.h" />
+    <ClInclude Include="..\..\tuio\TuioSharedMemServer.h" />
+    <ClInclude Include="..\..\tuio\TuioTime.h" />
+    <ClInclude Include="..\..\tuio\TuioUdpServer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\misc\mmtt_sharedmem.cpp" />
+    <ClCompile Include="..\..\misc\NosuchDebug.cpp" />
+    <ClCompile Include="..\..\misc\NosuchException.cpp" />
+    <ClCompile Include="..\..\misc\NosuchUtil.cpp" />
+    <ClCompile Include="..\..\misc\ptwinmm.c" />
+    <ClCompile Include="..\..\misc\XGetopt.cpp" />
+    <ClCompile Include="..\..\oscpack\ip\win32\NetworkingUtils.cpp" />
+    <ClCompile Include="..\..\oscpack\ip\win32\UdpSocket.cpp" />
+    <ClCompile Include="..\..\oscpack\osc\OscOutboundPacketStream.cpp" />
+    <ClCompile Include="..\..\oscpack\osc\OscTypes.cpp" />
+    <ClCompile Include="..\..\tuio\TuioServer.cpp" />
+    <ClCompile Include="..\..\tuio\TuioSharedMemServer.cpp" />
+    <ClCompile Include="..\..\tuio\TuioTime.cpp" />
+    <ClCompile Include="..\..\tuio\TuioUdpServer.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

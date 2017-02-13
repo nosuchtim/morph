@@ -1,0 +1,153 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\misc">
+      <UniqueIdentifier>{f3e94d4d-e2f9-4ddf-a373-dd8cbe91ffbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TUIO">
+      <UniqueIdentifier>{0b26b4ac-ba8b-488d-8b39-77a94e21b306}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\oscpack">
+      <UniqueIdentifier>{80bb2f72-8da5-47f0-85a8-46396771a3c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\misc">
+      <UniqueIdentifier>{f3a0aa20-7475-4ef8-adb9-e1006699d00f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\oscpack">
+      <UniqueIdentifier>{7e871dad-d0f1-4751-9ef2-3373efc78e58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TUIO">
+      <UniqueIdentifier>{35faafb1-8457-4171-aa02-1cffc2b6d553}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\misc\mmtt_sharedmem.h">
+      <Filter>Header Files\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\misc\NosuchDebug.h">
+      <Filter>Header Files\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\misc\NosuchException.h">
+      <Filter>Header Files\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\misc\NosuchUtil.h">
+      <Filter>Header Files\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\misc\porttime.h">
+      <Filter>Header Files\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\misc\xgetopt.h">
+      <Filter>Header Files\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\oscpack\ip\NetworkingUtils.h">
+      <Filter>Header Files\oscpack</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\oscpack\ip\TimerListener.h">
+      <Filter>Header Files\oscpack</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\oscpack\ip\UdpSocket.h">
+      <Filter>Header Files\oscpack</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\oscpack\osc\OscException.h">
+      <Filter>Header Files\oscpack</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\oscpack\osc\OscHostEndianness.h">
+      <Filter>Header Files\oscpack</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\oscpack\osc\OscOutboundPacketStream.h">
+      <Filter>Header Files\oscpack</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\oscpack\osc\OscPacketListener.h">
+      <Filter>Header Files\oscpack</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\oscpack\osc\OscTypes.h">
+      <Filter>Header Files\oscpack</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tuio\TuioContainer.h">
+      <Filter>Header Files\TUIO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tuio\TuioCursor.h">
+      <Filter>Header Files\TUIO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tuio\TuioDevice.h">
+      <Filter>Header Files\TUIO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tuio\TuioListener.h">
+      <Filter>Header Files\TUIO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tuio\TuioPoint.h">
+      <Filter>Header Files\TUIO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tuio\TuioServer.h">
+      <Filter>Header Files\TUIO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tuio\TuioSharedMemServer.h">
+      <Filter>Header Files\TUIO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tuio\TuioTime.h">
+      <Filter>Header Files\TUIO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tuio\TuioUdpServer.h">
+      <Filter>Header Files\TUIO</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\misc\mmtt_sharedmem.cpp">
+      <Filter>Source Files\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\misc\NosuchDebug.cpp">
+      <Filter>Source Files\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\misc\NosuchException.cpp">
+      <Filter>Source Files\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\misc\NosuchUtil.cpp">
+      <Filter>Source Files\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\misc\ptwinmm.c">
+      <Filter>Source Files\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\misc\XGetopt.cpp">
+      <Filter>Source Files\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tuio\TuioServer.cpp">
+      <Filter>Source Files\TUIO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tuio\TuioSharedMemServer.cpp">
+      <Filter>Source Files\TUIO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tuio\TuioTime.cpp">
+      <Filter>Source Files\TUIO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tuio\TuioUdpServer.cpp">
+      <Filter>Source Files\TUIO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\oscpack\ip\win32\NetworkingUtils.cpp">
+      <Filter>Source Files\oscpack</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\oscpack\ip\win32\UdpSocket.cpp">
+      <Filter>Source Files\oscpack</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\oscpack\osc\OscOutboundPacketStream.cpp">
+      <Filter>Source Files\oscpack</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\oscpack\osc\OscTypes.cpp">
+      <Filter>Source Files\oscpack</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
