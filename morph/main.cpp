@@ -34,12 +34,13 @@ using namespace TUIO;
 void
 printUsage() {
 	std::cout << "usage: tuio3d_* [-v] [-V #] [-a #] [-h host] [-p port] [-m name]\n";
-	std::cout << "  -V #         Verbosity level\n";
-	std::cout << "  -a #         Number of milliseconds between alive messages\n";
-	std::cout << "  -i #         Initial session id\n";
-	std::cout << "  -h {host}    Hostname for TUIO output\n";
-	std::cout << "  -p #         Port number for TUIO output\n";
-	std::cout << "  -m {name}    Shared memory name\n";
+	std::cout << "  -v               Verbosity level = 1\n";
+	std::cout << "  -V #             Verbosity level = #\n";
+	std::cout << "  -a #             Number of milliseconds between alive messages\n";
+	std::cout << "  -i #             Initial session id\n";
+	std::cout << "  -h {host}        Hostname for TUIO output (assumes port 3333)\n";
+	std::cout << "  -h {port}@{host} Port and hostname for TUIO output\n";
+	std::cout << "  -m {name}        Shared memory name\n";
 }
 
 int main(int argc, const char* argv[])
@@ -81,9 +82,6 @@ int main(int argc, const char* argv[])
 			case _T('m'):
 				memname = optarg;
 				break;
-			case _T('p'):
-				port = atoi(optarg);
-				break;
 			case _T('?'):
 				printUsage();
         		return 0;
@@ -108,10 +106,14 @@ int main(int argc, const char* argv[])
 	TuioServer* server = NULL;
 
 	if (host) {
-		if (port < 0) {
+		const char* amp = strchr(host, '@');
+		if (amp) {
+			port = atoi(host);
+			host = amp + 1;
+		} else {
 			port = 3333;
-			std::cout << "Assuming port=" << port << "\n";
 		}
+		std::cout << "Sending TUIO output to port " << port << " of host " << host << "\n";
 		server = new TuioUdpServer(host, port, alive_update_interval);
 	}
 	else if (memname) {
