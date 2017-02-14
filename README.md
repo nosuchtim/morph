@@ -9,7 +9,9 @@ TUIO3D_* is a collection of Github repositories with code that takes input from 
 These are the Github repositories:
 
    https://github.com/nosuchtim/TUIO3D_Sensel
+
    https://github.com/nosuchtim/TUIO3D_FingerWorks
+
    https://github.com/nosuchtim/TUIO3D_oscutil
 
 All of this stuff only works on Windows.
