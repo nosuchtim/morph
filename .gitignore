@@ -225,3 +225,4 @@ pip-log.txt
 .mr.developer.cfg
 *.db
 vs2015/TUIO3D_Sensel.VC.VC.opendb
+vs2015/TUIO3D_Sensel.VC.db
