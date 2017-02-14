@@ -63,7 +63,7 @@
       <AdditionalIncludeDirectories>..\..\TUIO;..\..\oscpack;..\..\misc;..\..\morph;..\..\sensel-api-c-cpp;..\..\sensel-api-c-cpp\examples\sensel_example_read_contacts\read_contacts_win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>SenselLib.lib;tuio3d_lib.lib;opengl32.lib;glu32.lib;ws2_32.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>tuio3d_lib.lib;SenselLib.lib;opengl32.lib;glu32.lib;ws2_32.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\sdl\lib;Debug;..\Debug;..;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)morph.pdb</ProgramDatabaseFile>

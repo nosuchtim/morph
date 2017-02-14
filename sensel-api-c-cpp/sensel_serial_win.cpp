@@ -32,7 +32,7 @@ bool senselSerialOpen2(sensel_serial_data *data, char* com_port)
   strcpy_s(full_port_name, SENSEL_COM_PORT_PREFIX);
   strcat_s(full_port_name, com_port);
 
-  data->serial_handle = CreateFile(TEXT(full_port_name),
+  data->serial_handle = CreateFileA(full_port_name,
                     GENERIC_READ | GENERIC_WRITE,
                     0,    // must be opened with exclusive-access
                     NULL, // no security attributes

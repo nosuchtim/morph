@@ -301,9 +301,13 @@ void senselReadFrame(contact_t **contacts, int *n_contacts, float **forces, uint
 	}
 	if (content_bit_mask & SENSEL_FRAME_CONTENT_PRESSURE_MASK)
 	{
+#ifndef SENSEL_NO_DECOMPRESS
+		printf("Unable to retrive PRESSURE_MASK, compiled with SENSEL_NO_SENSELLIB\n");
+#else
 		senselDecompressFrame(&frame_buffer[offset], frame_len, sensel_forces, sensel_labels);
 		*forces = sensel_forces;
 		*labels = sensel_labels;
+#endif
 	}
 }
 
@@ -323,6 +327,10 @@ bool senselSetFrameContentControl(uint8 content)
 {
 
 	if (content & SENSEL_FRAME_CONTENT_PRESSURE_MASK) {
+#ifdef SENSEL_NO_SENSELLIB
+		printf("Unable to set PRESSURE_MASK, compiled with SENSEL_NO_SENSELLIB\n");
+		return false;
+#else
 		//Init sensel frame decompression 
 		int metadata_length = senselReadRegVS(SENSEL_REG_COMPRESSION_METADATA, (uint8*)(sensel_compression_metadata));
 		senselDecompressInit(sensel_compression_metadata, metadata_length);
@@ -331,6 +339,7 @@ bool senselSetFrameContentControl(uint8 content)
 
 		sensel_forces = (float(*))malloc(sizeof(float) * decompressed_cols * decompressed_rows);
 		sensel_labels = (uint8(*))malloc(decompressed_cols * decompressed_rows);
+#endif
 	}
 	return _writeReg(SENSEL_REG_SCAN_CONTENT_CONTROL, 1, &content);
 }

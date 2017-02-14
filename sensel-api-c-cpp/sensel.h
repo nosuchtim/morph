@@ -36,6 +36,8 @@
 #define SENSEL_MAGIC      "S3NS31"
 #define SENSEL_MAGIC_LEN  6
 
+#define SENSEL_NO_SENSELLIB
+
 #ifdef __cplusplus
 extern "C" {
 #endif
