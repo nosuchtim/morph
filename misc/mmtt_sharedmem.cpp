@@ -536,28 +536,6 @@ Outlines_SharedMemHeader::addPoint(buff_index b, float x, float y, float z) {
 	return pnum;
 }
 
-#if 0
-void
-print_buff_info(char *prefix, Outlines_SharedMemHeader* h)
-{
-	DEBUGPRINT((">>>>> %s BUFF INFO", prefix));
-	for (int b = 0; b<3; b++) {
-		DEBUGPRINT((">>>>>   buff=%d numoutlines=%d numpoints=%d",
-			b, h->numoutlines[b], h->numpoints[b]));
-		for (int i = 0; i<h->numoutlines[b]; i++) {
-			OutlineMem* om = h->outline(b, i);
-			DEBUGPRINT((">>>>>       outline=%d region=%d numpoints=%d",
-				i, om->region, om->npoints));
-			if (om->npoints > 100000) {
-				DEBUGPRINT(("CORRUPTION in Buffer!! b=%d oi=%d  om=%lx",
-					b, i, (long)om));
-			}
-		}
-	}
-	DEBUGPRINT((">>>>> END OF %s BUFF INFO", prefix));
-}
-#endif
-
 void
 Outlines_SharedMemHeader::clear_lists(buff_index buffnum) {
 	NosuchAssert(buffnum != BUFF_UNSET);

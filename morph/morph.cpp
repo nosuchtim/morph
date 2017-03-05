@@ -189,7 +189,6 @@ void Morph::run() {
 
 		for (int i = 0; i < n_contacts; i++)
 		{
-			int fingnum = i;
 			float force = contacts[i].total_force;
 			float x_mm = contacts[i].x_pos_mm;
 			float y_mm = contacts[i].y_pos_mm;
@@ -215,17 +214,17 @@ void Morph::run() {
 				break;
 			case SENSEL_EVENT_CONTACT_START:
 				senselSetLEDBrightness(id, 100); //turn on LED
-				_mycallback(devnum, fingnum, event_type, x, y, f);
+				_mycallback(devnum, id, event_type, x, y, f);
 				event = "start";
 				break;
 			case SENSEL_EVENT_CONTACT_MOVE:
 				event = "move";
-				_mycallback(devnum, fingnum, event_type, x, y, f);
+				_mycallback(devnum, id, event_type, x, y, f);
 				break;
 			case SENSEL_EVENT_CONTACT_END:
 				senselSetLEDBrightness(id, 0); //turn LED off
 				event = "end";
-				_mycallback(devnum, fingnum, event_type, x, y, f);
+				_mycallback(devnum, id, event_type, x, y, f);
 				break;
 			default:
 				event = "error";
@@ -238,20 +237,5 @@ void Morph::run() {
 
 		server->update();
 		Sleep(1);  // some sort of throttle is probably needed
-
-		// if (n_contacts > 0) {
-		// 	printf("****\n");
-		// }
 	}
-#if 0
-	running=true;
-	while (running) {
-		wasupdated = 0;
-		// Call something here if it's a polling interface
-		if ( 1 ) {
-			server->update();
-		}
-		Sleep(1);
-	} 
-#endif
 }

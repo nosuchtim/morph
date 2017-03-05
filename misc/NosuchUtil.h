@@ -30,7 +30,6 @@
 #pragma once
 
 #include <stdint.h>
-// #include <pthread.h>
 #include "NosuchDebug.h"
 
 #ifndef WIN32
@@ -52,13 +51,6 @@
 
 #include <string>
 #include <vector>
-
-#if 0
-#ifdef _DEBUG
-#define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
-#define new DEBUG_NEW
-#endif
-#endif
 
 #ifdef WIN32
 #define _USE_MATH_DEFINES
@@ -128,13 +120,6 @@ std::string ok_json(const char *id);
 std::string ToNarrow( const wchar_t *s, char dfault = '?', const std::locale& loc = std::locale() );
 std::wstring s2ws(const std::string& s);
 std::string ws2s(const std::wstring& s);
-
-#if 0
-void NosuchLockInit(pthread_mutex_t* mutex, char *tag);
-void NosuchLock(pthread_mutex_t* mutex, char *tag);
-void NosuchUnlock(pthread_mutex_t* mutex, char *tag);
-int NosuchTryLock(pthread_mutex_t* mutex, char *tag);
-#endif
 
 class NosuchDrawInfo {
     public:
@@ -261,94 +246,3 @@ class HLS {
 	double _green;
 	double _blue;
 };
-
-#if 0
-// typedef struct ParamDynamicDataStructTag {
-// 	float value;
-// 	char displayValue[PARAM_DISPLAY_LEN+1];
-// } ParamDynamicDataStruct;
-
-typedef struct VideoPixel24bitTag {
-	BYTE blue;
-	BYTE green;
-	BYTE red;
-} VideoPixel24bit;
-
-typedef struct VideoPixel16bitTag {
-	BYTE fb;
-	BYTE sb;
-} VideoPixel16bit;
-
-typedef struct VideoPixel32bitTag {
-	BYTE blue;
-	BYTE green;
-	BYTE red;
-	BYTE alpha;
-} VideoPixel32bit;
-
-typedef struct VideoParamInfoTag {
-	char *name;
-	float defaultval;
-	int type;
-} VideoParamInfo;
-
-typedef struct VideoParamDataTag {
-	float value;
-	char display[PARAM_DISPLAY_LEN];
-} VideoParamData;
-
-CvScalar randomRGB();
-
-CvScalar HLStoRGB(float hue, float lum, float sat);
-void RGBtoHLS(float r, float g, float b, float* hue, float* lum, float* sat);
-float ToRGB1(float rm1, float rm2, float rh);
-float angleNormalize(float a);
-unsigned char *createimageofsize(CvSize sz);
-
-class NSSprite {
-	static int lastid;
-
-public:
-	NSSprite(CvPoint2D32f pt) {
-		center = pt;
-		age = 0.0;
-		speedx = 0.0;
-		speedy = 0.0;
-		size = 1.0;
-		generation = 0;
-		velocity = 0.0;
-		tracked = 0;
-		moveang = 0.0;
-		id = lastid++;
-		// NosuchDebug("NEW SPRITE id=%d center=%lf,%lf this=%lld",id,center.x,center.y,(long long)this);
-	}
-	void increaseAge() {
-		age += 1.0;
-	}
-	int tooOld() {
-		if ( age > 100.0 ) {
-			// NosuchDebug("tooOld returning TRUE, age=%lf for this=%lld",age,(long long)this);
-			return true;
-		}
-		else
-			return false;
-	}
-	void trackPointLost() {
-		velocity = 0.0;
-		tracked = 0;
-	}
-
-	CvPoint2D32f	center;
-	float			speedx;
-	float			speedy;
-	float			velocity;
-	float			moveang;
-	float			size;
-	float			age;
-	int				id;
-	int				generation;
-	int				tracked;
-	NSSprite *next;
-};
-
-#endif

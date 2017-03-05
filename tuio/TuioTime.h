@@ -93,9 +93,6 @@ namespace TUIO {
 		};
 		
 		static void initSession();
-#if 0
-		static TuioTime getSessionTime();
-#endif
 		static TuioTime getStartTime();
 		static TuioTime getSystemTime();
 	};
