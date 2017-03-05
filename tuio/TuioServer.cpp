@@ -47,10 +47,6 @@ TuioCursor* TuioServer::addTuioCursor(float x, float y) {
 	
 	adjustXY(x, y);
 
-	if (verbose) {
-		printf("Added Cursor sid=%d x=%.4f y=%.4f\n", sessionID,x,y);
-	}
-
 	int cursorID = (int)cursorList.size();
 	if (((int)(cursorList.size())<=maxCursorID) && ((int)(freeCursorList.size())>0)) {
 		std::list<TuioCursor*>::iterator closestCursor = freeCursorList.begin();
@@ -79,26 +75,8 @@ TuioCursor* TuioServer::addTuioCursorId(float x, float y, int uid, int id) {
 
 	adjustXY(x, y);
 
-	if (verbose) {
-		printf("Added Cursor uid=%d id=%d x=%.4f y=%.4f\n", uid, id,x,y);
-	}
-
 	sessionID = uid;
 	int cursorID = id;
-/*
-	if (((int)(cursorList.size())<=maxCursorID) && ((int)(freeCursorList.size())>0)) {
-		std::list<TuioCursor*>::iterator closestCursor = freeCursorList.begin();
-		
-		for(std::list<TuioCursor*>::iterator iter = freeCursorList.begin();iter!= freeCursorList.end(); iter++) {
-			if((*iter)->getDistance(x,y)<(*closestCursor)->getDistance(x,y)) closestCursor = iter;
-		}
-		
-		TuioCursor *freeCursor = (*closestCursor);
-		cursorID = (*closestCursor)->getCursorID();
-		freeCursorList.erase(closestCursor);
-		delete freeCursor;
-	} else maxCursorID = cursorID;	
-*/
 	
 	TuioCursor *tcur = new TuioCursor(sessionID, cursorID, x, y);
 	cursorList.push_back(tcur);
