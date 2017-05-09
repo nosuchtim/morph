@@ -6,6 +6,7 @@ BlocksSynth/
 ## Eclipse
 #################
 
+sensel-api-c-cpp_old
 *.pydevproject
 .project
 .metadata
