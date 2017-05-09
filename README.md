@@ -1,6 +1,14 @@
 # TUIO3D_Sensel
 A TUIO 3D server for the Sensel Morph
 
+The code here only runs on Windows.
+
+In order to use this code, you need to install the Sensel libraries, which are
+found in this GitHub repository: https://github.com/sensel/sensel-api .
+The directory https://github.com/sensel/sensel-api/blob/master/sensel-install
+contains installers, and you can install the libraries on Windows by executing this file:
+https://github.com/sensel/sensel-api/blob/master/sensel-install/SenselLibWin.exe
+
 ====================================================================
 
 TUIO3D_* is a collection of Github repositories with code that takes input from 3D devices
