@@ -73,8 +73,8 @@
     <IntDir>tmp\$(ProjectName)\x86\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)\build\x64\$(Configuration)\</OutDir>
-    <IntDir>build\x64\$(Configuration)\</IntDir>
+    <OutDir>build\$(ProjectName)\x64\$(Configuration)\</OutDir>
+    <IntDir>tmp\$(ProjectName)\x64\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -100,7 +100,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\TUIO;..\..\oscpack;..\..\misc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\TUIO;..\src\oscpack;..\src\misc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
@@ -155,7 +155,9 @@
     <ClCompile Include="..\src\oscpack\ip\win32\UdpSocket.cpp" />
     <ClCompile Include="..\src\oscpack\osc\OscOutboundPacketStream.cpp" />
     <ClCompile Include="..\src\oscpack\osc\OscTypes.cpp" />
-    <ClCompile Include="..\src\tuio\TuioServer.cpp" />
+    <ClCompile Include="..\src\tuio\TuioServer.cpp">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\src\TUIO;..\..\src\oscpack;..\..\..\src\misc;..\src\misc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
     <ClCompile Include="..\src\tuio\TuioSharedMemServer.cpp" />
     <ClCompile Include="..\src\tuio\TuioTime.cpp" />
     <ClCompile Include="..\src\tuio\TuioUdpServer.cpp" />
