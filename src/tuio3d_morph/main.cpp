@@ -55,6 +55,8 @@ printUsage() {
 	fprintf(stdout,"\n");
 }
 
+float ForceFactor = 1.0;
+
 int main(int argc, char **argv)
 {
 	const char *host = NULL;
@@ -71,8 +73,13 @@ int main(int argc, char **argv)
 	int sidinitial = 10000;
 	int sidincrement = 1000;  // if there are multiple morphs
 
-	while ((c = getopt(argc, (const char**)argv, "vxyV:a:h:i:lm:p:s:")) != EOF) {
+	while ((c = getopt(argc, (const char**)argv, "vxyV:a:f:h:i:lm:p:s:")) != EOF) {
+		printf("Arg = %s\n",optarg);
 		switch (c) {
+		case _T('f'):
+			extern float ForceFactor;
+			ForceFactor = (float)atof(optarg);
+			break;
 		case _T('v'):
 			verbose = 1;
 			break;

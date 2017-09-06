@@ -235,7 +235,8 @@ namespace TUIO {
 		};
 
 		virtual void setForce(float f) {
-			force = f;
+			extern float ForceFactor;
+			force = f * ForceFactor;
 		};
 		
 		virtual int getTuioState() { 
