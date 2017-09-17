@@ -56,6 +56,7 @@ printUsage() {
 }
 
 float ForceFactor = 1.0;
+bool UseLEDs = false;
 
 int main(int argc, char **argv)
 {
@@ -73,7 +74,7 @@ int main(int argc, char **argv)
 	int sidinitial = 10000;
 	int sidincrement = 1000;  // if there are multiple morphs
 
-	while ((c = getopt(argc, (const char**)argv, "vxyV:a:f:h:i:lm:p:s:")) != EOF) {
+	while ((c = getopt(argc, (const char**)argv, "vxyV:a:f:h:i:lLm:p:s:")) != EOF) {
 		printf("Arg = %s\n",optarg);
 		switch (c) {
 		case _T('f'):
@@ -120,6 +121,9 @@ int main(int argc, char **argv)
 			break;
 		case _T('l'):
 			listdevices = true;
+			break;
+		case _T('L'):
+			UseLEDs = true;
 			break;
 		case _T('?'):
 			printUsage();

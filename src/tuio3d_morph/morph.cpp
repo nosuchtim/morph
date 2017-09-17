@@ -31,6 +31,8 @@
 
 using namespace TUIO;
 
+extern bool UseLEDs;
+
 volatile sig_atomic_t ctrl_c_requested = false;
 
 void handle_ctrl_c(int sig)
@@ -215,7 +217,9 @@ void Morph::run() {
 					{
 					case CONTACT_START:
 						event = "start";
-						senselSetLEDBrightness(h,cid, 100); //turn on LED
+						if (UseLEDs) {
+							senselSetLEDBrightness(h, cid, 100); //turn on LED
+						}
 						pressed(x_norm, y_norm, sid, cid, f_norm);
 						break;
 
@@ -226,7 +230,9 @@ void Morph::run() {
 
 					case CONTACT_END:
 						event = "end";
-						senselSetLEDBrightness(h,cid, 0); //turn LED off
+						if (UseLEDs) {
+							senselSetLEDBrightness(h, cid, 0); //turn LED off
+						}
 						released(x_norm, y_norm, sid, cid, f_norm);
 						break;
 
