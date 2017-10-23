@@ -50,7 +50,7 @@ std::vector<std::string> NosuchSplitOnAnyChar(std::string s, std::string sepchar
     return result;
 }
 
-std::vector<std::string> NosuchSplitOnString(const std::string& s, const std::string& delim, const bool keep_empty = true) {
+std::vector<std::string> NosuchSplitOnString(const std::string& s, const std::string& delim, const bool keep_empty) {
 	std::vector<std::string> result;
     if (delim.empty()) {
         result.push_back(s);

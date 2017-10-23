@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 	bool flipx = false;
 	bool flipy = false;
 	bool listdevices = false;
-	std::map<unsigned char*, int> serialmap;
+	std::map<unsigned char*, unsigned char*> serialmap;
 	bool serialmap_filled = false;
 	int sidinitial = 10000;
 	int sidincrement = 1000;  // if there are multiple morphs
@@ -104,14 +104,16 @@ int main(int argc, char **argv)
 			break;
 		case _T('s'):
 		{
-			unsigned char* arg = (unsigned char*)_strdup((const char*)optarg);
-			unsigned char* p = (unsigned char*)strchr((char*)arg, ':');
-			if (p == NULL) {
+			unsigned char* serial = (unsigned char*)_strdup((const char*)optarg);
+			unsigned char* pcolon = (unsigned char*)strchr((char*)serial, ':');
+			if (pcolon == NULL) {
 				printf("Invalid value for -s option\n");
 			}
 			else {
-				*p++ = '\0';
-				serialmap.insert(std::pair<unsigned char*, int>(arg, atoi((const char*)p)));
+				*pcolon++ = '\0';
+				// the format is -s {serial}:{sid} or
+				// -s {serial}:{sid}={x0,y0,x1,y1};{sid}={x0,y0,x1,y1}
+				serialmap.insert(std::pair<unsigned char*, unsigned char *>(serial, pcolon));
 				serialmap_filled = true;
 			}
 			break;

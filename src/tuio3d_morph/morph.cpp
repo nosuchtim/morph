@@ -40,34 +40,38 @@ void handle_ctrl_c(int sig)
 	ctrl_c_requested = true;
 }
 
-Morph::Morph(TuioServer* s, std::map<unsigned char*,int> serialmap) : TuioDevice(s) {
+Morph::Morph(TuioServer* s, std::map<unsigned char*,unsigned char*> serialmap) : TuioDevice(s) {
 
 	SenselDeviceList devlist;
 
 	senselGetDeviceList(&devlist);
-	if (devlist.num_devices == 0) {
-		fprintf(stdout, "No Sensel devices found!\n");
-		return;
-	}
 
 	// If no explicit serialmap is given, we create one.
 	if (serialmap.size() == 0) {
 		for (int i = 0; i < devlist.num_devices; i++) {
 			SenselDeviceID& dev = devlist.devices[i];
-			serialmap.insert(std::pair<unsigned char*, int>(dev.serial_num, server->sidInitial + i*(server->sidDeviceMultiplier)));
+			std::string sd = NosuchSnprintf("%d",server->sidInitial + i*(server->sidDeviceMultiplier));
+			serialmap.insert(std::pair<unsigned char*, unsigned char*>(dev.serial_num, (unsigned char*)sd.c_str()));
 		}
 	}
 
+	int nfound = 0;
 	for (auto& x : serialmap) {
 		SENSEL_HANDLE h;
 		unsigned char* serial = x.first;
-		if (senselOpenDeviceBySerialNum(&h, serial) == SENSEL_OK) {
+		if (devlist.num_devices > 0 && senselOpenDeviceBySerialNum(&h, serial) == SENSEL_OK) {
 			_morph.push_back(new OneMorph(h, serial, x.second));
+			nfound++;
 		}
 		else {
 			fprintf(stdout, "Unable to find Morph with serial number '%s'\n", serial);
 		}
 	}
+
+	if (devlist.num_devices == 0) {
+		fprintf(stdout, "Error: no Sensel devices found!\n");
+	}
+
 }
 
 bool
@@ -193,7 +197,6 @@ void Morph::run() {
 						"UNKNOWN_CONTACT_STATE";
 
 					SenselContact& c = frame->contacts[i];
-					int sid = morph->_initialsid + c.id;
 					unsigned char cid = c.id;
 					float force = c.total_force;
 					float x_mm = c.x_pos;
@@ -203,14 +206,20 @@ void Morph::run() {
 					float minor = c.minor_axis;
 					float orientation = c.orientation;
 
+					float x_norm = x_mm / MORPH_WIDTH;
+					float y_norm = y_mm / MORPH_HEIGHT;
+					float f_norm = force / MORPH_MAX_FORCE;
+		
+					int sid = morph->initialSid(x_norm,y_norm) + c.id;
+					if (sid < 0) {
+						fprintf(stdout, "Warning, no sid for that position on that pad!");
+						continue;
+					}
+
 					if (server->verbose > 1) {
 						fprintf(stdout, "Serial: %s   Contact ID: %d   Session ID: %d   State: %s   xy=%.4f,%.4f\n",
 							morph->_serialnum, cid, sid, statestr, x_mm, y_mm);
 					}
-		
-					float x_norm = x_mm / MORPH_WIDTH;
-					float y_norm = y_mm / MORPH_HEIGHT;
-					float f_norm = force / MORPH_MAX_FORCE;
 		
 					char* event = "unknown";
 					switch (c.state)

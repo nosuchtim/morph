@@ -22,10 +22,12 @@
 #ifndef INCLUDED_Morph_H
 #define INCLUDED_Morph_H
 
+#include "NosuchUtil.h"
 #include "TuioServer.h"
 #include "TuioCursor.h"
 #include <list>
 #include <map>
+#include <vector>
 #include <math.h>
 #include "TuioDevice.h"
 #include "sensel.h"
@@ -38,12 +40,46 @@ using namespace TUIO;
 #define MORPH_HEIGHT 130
 #define MAX_IGESTURE_ID 12
 
+class MorphArea {
+public:
+	MorphArea(float x0_, float y0_, float x1_, float y1_) : x0(x0_), y0(y0_), x1(x1_), y1(y1_) {
+	}
+	float x0;
+	float y0;
+	float x1;
+	float y1;
+};
+
 class OneMorph {
 public:
-	OneMorph(SENSEL_HANDLE h, unsigned char* serial, int sid) : _handle(h), _initialsid(sid), _serialnum(serial) {
+	OneMorph(SENSEL_HANDLE h, unsigned char* serial, unsigned char* sids) : _handle(h), _serialnum(serial) {
+		std::vector<std::string> sidspecs;
+		sidspecs = NosuchSplitOnString(std::string((char*)sids), ";", true);
+		int nsidspecs = sidspecs.size();
+		float x0, y0, x1, y1;
+		for (int n = 0; n < nsidspecs; n++) {
+			int sidinit;
+			if (sscanf(sidspecs[n].c_str(), "%d=%f,%f,%f,%f", &sidinit, &x0, &y0, &x1, &y1) != 5) {
+				printf("Invalid value for -s option");
+			}
+			else {
+				MorphArea* ma = new MorphArea(x0,y0,x1,y1);
+				initialsids.insert(std::pair<int, MorphArea*>(sidinit, ma));
+			}
+		}
+	}
+	int initialSid(float x, float y) {
+		for (auto& xx : initialsids) {
+			MorphArea* ma = xx.second;
+			if (x >= ma->x0 && x <= ma->x1 && y >= ma->y0 && y <= ma->y1) {
+				return xx.first;
+			}
+		}
+		return -1;
 	}
 	SENSEL_HANDLE _handle;
-	int _initialsid;
+	std::map<int, MorphArea*> initialsids;
+	// int _initialsid;
 	unsigned char* _serialnum;
 	SenselFrameData* _frame;
 };
@@ -51,7 +87,7 @@ public:
 class Morph : public TuioDevice { 
 	
 public:
-	Morph(TuioServer* s, std::map<unsigned char*,int> );
+	Morph(TuioServer* s, std::map<unsigned char*,unsigned char*> );
 	~Morph() {
 	};
 	

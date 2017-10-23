@@ -80,7 +80,7 @@ void NosuchPrintTime(const char *prefix);
 int NosuchNetworkInit();
 
 std::vector<std::string> NosuchSplitOnAnyChar(std::string s, std::string sepchars);
-std::vector<std::string> NosuchSplitOnString(const std::string& s, const std::string& delim, const bool keep_empty);
+std::vector<std::string> NosuchSplitOnString(const std::string& s, const std::string& delim, const bool keep_empty = true);
 std::string NosuchToLower(std::string s);
 
 char *base64_encode(const uint8_t *data, size_t input_length);
