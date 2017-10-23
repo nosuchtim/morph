@@ -59,10 +59,20 @@ public:
 		float x0, y0, x1, y1;
 		for (int n = 0; n < nsidspecs; n++) {
 			int sidinit;
-			if (sscanf(sidspecs[n].c_str(), "%d=%f,%f,%f,%f", &sidinit, &x0, &y0, &x1, &y1) != 5) {
-				printf("Invalid value for -s option");
+			const char* sidspec = sidspecs[n].c_str();
+			if (strchr(sidspec, '=') == NULL) {
+				if (sscanf(sidspec, "%d", &sidinit) != 1) {
+					sidinit = -1;
+				} else {
+					x0 = y0 = 0.0;
+					x1 = y1 = 1.0;
+				}
+			} else if (sscanf(sidspec, "%d=%f,%f,%f,%f", &sidinit, &x0, &y0, &x1, &y1) != 5) {
+					sidinit = -1;
 			}
-			else {
+			if (sidinit < 0) {
+				printf("Invalid value for -s option");
+			} else {
 				MorphArea* ma = new MorphArea(x0,y0,x1,y1);
 				initialsids.insert(std::pair<int, MorphArea*>(sidinit, ma));
 			}
