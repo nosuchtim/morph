@@ -72,9 +72,13 @@ namespace TUIO {
 		void sendCursorBundle(long fseq);
 
 		void update() {
-			initFrame();
-			// check?
-			commitFrame();
+			try {
+				initFrame();
+				// check?
+				commitFrame();
+			} catch (std::exception &e) { 
+				std::cout << "error in TuioUdpServer::update, msg = " << e.what() << std::endl;
+			}
 		}
 
 	private:
