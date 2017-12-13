@@ -61,13 +61,13 @@ public:
 			int sidinit;
 			const char* sidspec = sidspecs[n].c_str();
 			if (strchr(sidspec, '=') == NULL) {
-				if (sscanf(sidspec, "%d", &sidinit) != 1) {
+				if (sscanf_s(sidspec, "%d", &sidinit) != 1) {
 					sidinit = -1;
 				} else {
 					x0 = y0 = 0.0;
 					x1 = y1 = 1.0;
 				}
-			} else if (sscanf(sidspec, "%d=%f,%f,%f,%f", &sidinit, &x0, &y0, &x1, &y1) != 5) {
+			} else if (sscanf_s(sidspec, "%d=%f,%f,%f,%f", &sidinit, &x0, &y0, &x1, &y1) != 5) {
 					sidinit = -1;
 			}
 			if (sidinit < 0) {
@@ -78,10 +78,14 @@ public:
 			}
 		}
 	}
-	int initialSid(float x, float y) {
+	int mapToSidArea(float& x, float& y) {
 		for (auto& xx : initialsids) {
 			MorphArea* ma = xx.second;
 			if (x >= ma->x0 && x <= ma->x1 && y >= ma->y0 && y <= ma->y1) {
+				// Normalize x and y so that the area
+				// is mapped to (0,0),(1,1)
+				x = (x - ma->x0) * (1.0f / (ma->x1 - ma->x0));
+				y = (y - ma->y0) * (1.0f / (ma->y1 - ma->y0));
 				return xx.first;
 			}
 		}
@@ -92,13 +96,33 @@ public:
 	// int _initialsid;
 	unsigned char* _serialnum;
 	SenselFrameData* _frame;
+	std::map<unsigned char, int> _previousSidFor; // map of cid to sid
+	void unsetPreviousSid(unsigned char cid) {
+		if (_previousSidFor.find(cid) != _previousSidFor.end()) {
+			_previousSidFor.erase(cid);
+		}
+		else {
+			fprintf(stdout, "Hey, unsetePreviousSid called for cid=%d but nothing in _previousSidFor?",cid);
+		}
+	}
+	void setPreviousSid(unsigned char cid, int sid) {
+		_previousSidFor[cid] = sid;
+	}
+	int previousSidFor(unsigned char cid) {
+		if (_previousSidFor.find(cid) != _previousSidFor.end()) {
+			return _previousSidFor[cid];
+		}
+		else {
+			return -1;
+		}
+	}
 };
 
-class Morph : public TuioDevice { 
+class AllMorphs : public TuioDevice { 
 	
 public:
-	Morph(TuioServer* s, std::map<unsigned char*,unsigned char*> );
-	~Morph() {
+	AllMorphs(TuioServer* s, std::map<unsigned char*,unsigned char*> );
+	~AllMorphs() {
 	};
 	
 	static void listdevices();
@@ -106,7 +130,7 @@ public:
 	void run();
 	bool init();
 	void pressed(float x, float y, int uid, int id, float force);
-	void released(float x, float y, int uid, int id, float force);
+	void released(int uid);
 	void dragged(float x, float y, int uid, int id, float force);
 
 private:

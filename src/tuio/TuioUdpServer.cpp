@@ -76,17 +76,17 @@ void TuioUdpServer::sendFullMessages() {
 	
 	// add the cursor alive message
 	(*fullPacket) << osc::BeginMessage( "/tuio/25Dcur") << "alive";
-	if ( verbose > 1 ) {
+	if ( verbose > 2 ) {
 		std::cout << "/tuio/25Dcur alive ";
 	}
 	for (std::list<TuioCursor*>::iterator tuioCursor = cursorList.begin(); tuioCursor!=cursorList.end(); tuioCursor++) {
 		(*fullPacket) << (int32)((*tuioCursor)->getSessionID());	
-		if ( verbose > 1 ) {
+		if ( verbose > 2 ) {
 			std::cout << " " << (int32)((*tuioCursor)->getSessionID());	
 		}
 	}
 	(*fullPacket) << osc::EndMessage;	
-	if ( verbose > 1 ) {
+	if ( verbose > 2 ) {
 		std::cout << std::endl;
 	}
 
@@ -100,7 +100,7 @@ void TuioUdpServer::sendFullMessages() {
 			(*fullPacket) << osc::BeginMessage( "/tuio/25Dcur") << "fseq" << -1 << osc::EndMessage;
 			(*fullPacket) << osc::EndBundle;
 			socket->Send( fullPacket->Data(), fullPacket->Size() );
-			if ( verbose > 1 ) {
+			if ( verbose > 2 ) {
 				std::cout << "/tuio/25Dcur fseq -1" << std::endl;
 			}
 
@@ -110,17 +110,17 @@ void TuioUdpServer::sendFullMessages() {
 			
 			// add the cursor alive message
 			(*fullPacket) << osc::BeginMessage( "/tuio/25Dcur") << "alive";
-			if ( verbose > 1 ) {
+			if ( verbose > 2 ) {
 				std::cout << "/tuio/25Dcur alive";
 			}
 			for (std::list<TuioCursor*>::iterator tuioCursor = cursorList.begin(); tuioCursor!=cursorList.end(); tuioCursor++) {
 				(*fullPacket) << (int32)((*tuioCursor)->getSessionID());	
-				if ( verbose > 1 ) {
+				if ( verbose > 2 ) {
 					std::cout << " " << (int32)((*tuioCursor)->getSessionID());	
 				}
 			}
 			(*fullPacket) << osc::EndMessage;				
-			if ( verbose > 1 ) {
+			if ( verbose > 2 ) {
 				std::cout << std::endl;
 			}
 		}
@@ -152,7 +152,7 @@ void TuioUdpServer::sendFullMessages() {
 	(*fullPacket) << osc::BeginMessage( "/tuio/25Dcur") << "fseq" << -1 << osc::EndMessage;
 	(*fullPacket) << osc::EndBundle;
 	socket->Send( fullPacket->Data(), fullPacket->Size() );
-	if ( verbose > 1 ) {
+	if ( verbose > 2 ) {
 		std::cout << "/tuio/25Dcur fseq -1" << std::endl;
 	}
 	
@@ -244,13 +244,13 @@ void TuioUdpServer::sendEmptyCursorBundle() {
 	oscPacket->Clear();	
 	(*oscPacket) << osc::BeginBundleImmediate;
 	(*oscPacket) << osc::BeginMessage( "/tuio/25Dcur") << "alive" << osc::EndMessage;	
-	if ( verbose > 1 ) {
+	if ( verbose > 2 ) {
 		std::cout << "/tuio/25Dcur alive" << std::endl;
 	}
 	(*oscPacket) << osc::BeginMessage( "/tuio/25Dcur") << "fseq" << -1 << osc::EndMessage;
 	(*oscPacket) << osc::EndBundle;
 	socket->Send( oscPacket->Data(), oscPacket->Size() );
-	if ( verbose > 1 ) {
+	if ( verbose > 2 ) {
 		std::cout << "/tuio/25Dcur fseq -1" << std::endl;
 	}
 }
@@ -260,17 +260,17 @@ void TuioUdpServer::startCursorBundle() {
 	(*oscPacket) << osc::BeginBundleImmediate;
 	
 	(*oscPacket) << osc::BeginMessage( "/tuio/25Dcur") << "alive";
-	if ( verbose > 1 ) {
+	if ( verbose > 2 ) {
 		std::cout << "/tuio/25Dcur alive";
 	}
 	for (std::list<TuioCursor*>::iterator tuioCursor = cursorList.begin(); tuioCursor!=cursorList.end(); tuioCursor++) {
-		if ( verbose > 1 ) {
+		if ( verbose > 2 ) {
 			std::cout << " " << (int32)((*tuioCursor)->getSessionID());	
 		}
 		(*oscPacket) << (int32)((*tuioCursor)->getSessionID());	
 	}
 	(*oscPacket) << osc::EndMessage;	
-	if ( verbose > 1 ) {
+	if ( verbose > 2 ) {
 		std::cout << std::endl;
 	}
 }
@@ -302,7 +302,7 @@ void TuioUdpServer::sendCursorBundle(long fseq) {
 	(*oscPacket) << osc::BeginMessage( "/tuio/25Dcur") << "fseq" << (int32)fseq << osc::EndMessage;
 	(*oscPacket) << osc::EndBundle;
 	socket->Send( oscPacket->Data(), oscPacket->Size() );
-	if ( verbose > 1 ) {
+	if ( verbose > 2 ) {
 		std::cout << "/tuio/25Dcur fseq " << (int32)fseq << std::endl;
 	}
 }

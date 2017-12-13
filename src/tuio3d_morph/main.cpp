@@ -56,7 +56,6 @@ printUsage() {
 }
 
 float ForceFactor = 1.0;
-bool UseLEDs = false;
 
 int main(int argc, char **argv)
 {
@@ -124,9 +123,6 @@ int main(int argc, char **argv)
 		case _T('l'):
 			listdevices = true;
 			break;
-		case _T('L'):
-			UseLEDs = true;
-			break;
 		case _T('?'):
 			printUsage();
 			return 1;
@@ -134,7 +130,7 @@ int main(int argc, char **argv)
 	}
 
 	if (listdevices) {
-		Morph::listdevices();
+		AllMorphs::listdevices();
 		return 0;
 	}
 
@@ -177,7 +173,7 @@ int main(int argc, char **argv)
 	server->sidDeviceMultiplier = sidincrement;
 	server->verbose = verbose;
 
-	TuioDevice *device = new Morph(server, serialmap);
+	TuioDevice *device = new AllMorphs(server, serialmap);
 
 	if (device->init()) {
 		device->run();
