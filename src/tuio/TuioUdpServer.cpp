@@ -130,8 +130,7 @@ void TuioUdpServer::sendFullMessages() {
 		if (flipX) {
 			x = 1.0f - x;
 		}
-		// For some reason that I'm not sure of, the y is already flipped, so this is reversed.
-		if (!flipY) {
+		if (flipY) {
 			y = 1.0f - y;
 		}
 
@@ -179,7 +178,7 @@ void TuioUdpServer::initialize(const char *host, int port) {
 		fullBuffer = new char[size];
 		fullPacket = new osc::OutboundPacketStream(fullBuffer,size);
 	} catch (std::exception &e) { 
-		std::cout << "could not create socket" << std::endl;
+		std::cout << "could not create socket: " << e.what() << std::endl;
 		socket = NULL;
 	}
 	
@@ -281,11 +280,10 @@ void TuioUdpServer::addCursorMessage(TuioCursor *tcur) {
 	float x = tcur->getX();
 	float y = tcur->getY();
 	if (flipX) {
-		x = 1.0 - x;
+		x = 1.0f - x;
 	}
-	// For some reason that I'm not sure of, the y is already flipped, so this is reversed.
-	if (!flipY) {
-		y = 1.0 - y;
+	if (flipY) {
+		y = 1.0f - y;
 	}
 	 (*oscPacket) << (int32)(tcur->getSessionID()) << x << y << tcur->getForce();
 	 (*oscPacket) << tcur->getXSpeed() << tcur->getYSpeed() << tcur->getForceSpeed() << tcur->getMotionAccel() ;	

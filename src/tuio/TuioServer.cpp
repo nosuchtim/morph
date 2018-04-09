@@ -44,6 +44,7 @@ TuioServer::adjustXY(float& x, float& y) {
 		x = 1.0f - x;
 	}
 }
+
 TuioCursor* TuioServer::addTuioCursor(float x, float y) {
 	sessionID++;
 	
