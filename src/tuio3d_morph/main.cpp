@@ -25,7 +25,6 @@
 #include "TuioSharedMemServer.h"
 #include "TuioUdpServer.h"
 #include "TuioCursor.h"
-#include "TuioDevice.h"
 
 #include <stdio.h>
 
@@ -44,34 +43,30 @@ using namespace TUIO;
 
 void
 printUsage() {
-	fprintf(stdout,"usage: tuio3d_* [-v] [-V #] [-a #] [-h port@host] [-l] [-m name]\n");
+	fprintf(stdout,"usage: tuio3d_* [-v] [-V #] [-a #] [-h port@host] [-l]\n");
 	fprintf(stdout,"  -v               Verbosity level = 1\n");
 	fprintf(stdout,"  -V #             Verbosity level = #\n");
 	fprintf(stdout,"  -a #             Number of milliseconds between alive messages\n");
 	fprintf(stdout,"  -h {port}@{host} Port and hostname for TUIO output\n");
 	fprintf(stdout,"  -l               List all Morphs and their serial numbers\n");
-	fprintf(stdout,"  -m {name}        Shared memory name\n");
 	fprintf(stdout,"  -s {serial#}:{initialsid}        Serial# and initial session id\n");
 	fprintf(stdout,"\n");
 }
 
 float ForceFactor = 1.0;
+int Verbose = 0;
+int Alive_update_interval = 1000; // milliseconds
+bool FlipX = false;
+bool FlipY = false;
 
 int main(int argc, char **argv)
 {
 	const char *host = NULL;
-	const char *memname = NULL;
 	int port = -1;
-	int verbose = 0;
 	int c;
-	int alive_update_interval = 1000; // milliseconds
-	bool flipx = false;
-	bool flipy = false;
 	bool listdevices = false;
 	std::map<unsigned char*, unsigned char*> serialmap;
 	bool serialmap_filled = false;
-	int sidinitial = 10000;
-	int sidincrement = 1000;  // if there are multiple morphs
 
 	while ((c = getopt(argc, (const char**)argv, "vxyV:a:f:h:i:lLm:p:s:")) != EOF) {
 		printf("Arg = %s\n",optarg);
@@ -81,26 +76,28 @@ int main(int argc, char **argv)
 			ForceFactor = (float)atof(optarg);
 			break;
 		case _T('v'):
-			verbose = 1;
+			Verbose = 1;
 			break;
 		case _T('x'):
-			flipx = true;
+			FlipX = true;
 			break;
 		case _T('y'):
-			flipy = true;
+			FlipY = true;
 			break;
 		case _T('V'):
-			verbose = atoi(optarg);
+			Verbose = atoi(optarg);
 			break;
 		case _T('a'):
-			alive_update_interval = atoi(optarg);
+			Alive_update_interval = atoi(optarg);
 			break;
 		case _T('h'):
 			host = optarg;
 			break;
+#if 0
 		case _T('i'):
 			sidinitial = atoi(optarg);
 			break;
+#endif
 		case _T('s'):
 		{
 			unsigned char* serial = (unsigned char*)_strdup((const char*)optarg);
@@ -117,9 +114,6 @@ int main(int argc, char **argv)
 			}
 			break;
 		}
-		case _T('m'):
-			memname = optarg;
-			break;
 		case _T('l'):
 			listdevices = true;
 			break;
@@ -135,52 +129,18 @@ int main(int argc, char **argv)
 	}
 
 	int nleft = argc - optind;
-	// fprintf(stdout,"nleft = " << nleft << " verbose = " << verbose << "\n");
 	if ( nleft != 0 ) {
 		printUsage();
 		return 1;
 	}
 
-	if (memname != NULL && host != NULL) {
-		fprintf(stdout,"You can't do both shared-memory and TUIO at the same time!\n");
-		return 1;
-	}
+	AllMorphs *allmorphs = new AllMorphs(serialmap);
 
-	if (memname == NULL && host == NULL) {
-		host = "3333@127.0.0.1";
-	}
-
-	TuioServer* server = NULL;
-
-	if (host) {
-		const char* amp = strchr(host, '@');
-		if (amp) {
-			port = atoi(host);
-			host = amp + 1;
-		} else {
-			port = 3333;
-		}
-		fprintf(stdout, "Sending TUIO output to port %d of host %s\n", port, host);
-		server = new TuioUdpServer(host, port, alive_update_interval);
-	}
-	else if (memname) {
-		server = new TuioSharedMemServer(memname);
-	}
-
-	server->flipX = flipx;
-	server->flipY = flipy;
-	server->sidInitial = sidinitial;
-	server->sidDeviceMultiplier = sidincrement;
-	server->verbose = verbose;
-
-	TuioDevice *device = new AllMorphs(server, serialmap);
-
-	if (device->init()) {
-		device->run();
+	if (allmorphs->init()) {
+		allmorphs->run();
 	}
 	// run() may not actually return
-	delete(device);
-	delete(server);
+	delete(allmorphs);
 
 	return 0;
 }

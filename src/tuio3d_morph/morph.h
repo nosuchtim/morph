@@ -24,14 +24,16 @@
 
 #include "NosuchUtil.h"
 #include "TuioServer.h"
+#include "TuioUdpServer.h"
 #include "TuioCursor.h"
 #include <list>
 #include <map>
 #include <vector>
 #include <math.h>
-#include "TuioDevice.h"
 #include "sensel.h"
 #include "sensel_protocol.h"
+
+extern int Alive_update_interval;
 
 using namespace TUIO;
 
@@ -42,12 +44,13 @@ using namespace TUIO;
 
 class MorphArea {
 public:
-	MorphArea(float x0_, float y0_, float x1_, float y1_) : x0(x0_), y0(y0_), x1(x1_), y1(y1_) {
+	MorphArea(TuioServer* server_, float x0_, float y0_, float x1_, float y1_) : server(server_), x0(x0_), y0(y0_), x1(x1_), y1(y1_) {
 	}
 	float x0;
 	float y0;
 	float x1;
 	float y1;
+	TuioServer* server;
 };
 
 class OneMorph {
@@ -56,29 +59,63 @@ public:
 		std::vector<std::string> sidspecs;
 		sidspecs = NosuchSplitOnString(std::string((char*)sids), ";", true);
 		int nsidspecs = sidspecs.size();
-		float x0, y0, x1, y1;
 		for (int n = 0; n < nsidspecs; n++) {
 			int sidinit;
-			const char* sidspec = sidspecs[n].c_str();
-			if (strchr(sidspec, '=') == NULL) {
-				if (sscanf_s(sidspec, "%d", &sidinit) != 1) {
-					sidinit = -1;
-				} else {
-					x0 = y0 = 0.0;
-					x1 = y1 = 1.0;
-				}
-			} else if (sscanf_s(sidspec, "%d=%f,%f,%f,%f", &sidinit, &x0, &y0, &x1, &y1) != 5) {
-					sidinit = -1;
+			int port;
+			std::string host;
+			float x0, y0, x1, y1;
+
+			if (!parseSidSpec(sidspecs[n], sidinit, port, host, x0, y0, x1, y1)) {
+				fprintf(stdout, "Unable to parse Sid Spec: %s\n",sidspecs[n].c_str());
+				continue;
 			}
-			if (sidinit < 0) {
-				printf("Invalid value for -s option");
-			} else {
-				MorphArea* ma = new MorphArea(x0,y0,x1,y1);
-				initialsids.insert(std::pair<int, MorphArea*>(sidinit, ma));
+
+			TuioServer* server = TuioServer::findServer(host, port);
+			if (!server) {
+				fprintf(stdout, "new TuioServer on port %d, host %s\n", port, host.c_str());
+				server = new TuioUdpServer(host, port, Alive_update_interval);
+				TuioServer::addServerToList(server);
 			}
+
+			MorphArea* ma = new MorphArea(server,x0,y0,x1,y1);
+
+			initialsids.insert(std::pair<int, MorphArea*>(sidinit, ma));
 		}
 	}
-	int mapToSidArea(float& x, float& y) {
+
+	bool parseSidSpec(std::string spec, int& sidinit, int& port, std::string& host, float& x0, float& y0, float& x1, float& y1) {
+
+		// Format is {sidinit}[/{port}[@{host}]][={x0},{y0},{x1},{y1}]
+
+		sidinit = 10000;
+		port = 3333;
+		host = "127.0.0.1";
+		x0 = y0 = 0.0;
+		x1 = y1 = 1.0;
+		sscanf_s(spec.c_str(), "%d", &sidinit);
+		size_t i;
+		i = spec.find("=");
+		if (i != spec.npos) {
+			std::string s = spec.substr(i + 1);
+			spec = spec.substr(0, i);
+			sscanf(s.c_str(), "%f,%f,%f,%f",&x0,&y0,&x1,&y1);
+		}
+		i = spec.find("/");
+		if (i != spec.npos) {
+#define HOST_BUFFSIZE 256
+			spec = spec.substr(i);
+			char hostbuff[HOST_BUFFSIZE];
+			int n = sscanf_s(spec.c_str(), "/%d@%128s", &port, hostbuff, HOST_BUFFSIZE);
+			if ( n != 2 ) {
+				fprintf(stdout, "Bad format of sid spec!?\n");
+				return false;
+			}
+			host = std::string(hostbuff);
+		}
+		return true;
+	}
+
+	int mapToSidArea(float& x, float& y, MorphArea*& area) {
 		for (auto& xx : initialsids) {
 			MorphArea* ma = xx.second;
 			if (x >= ma->x0 && x <= ma->x1 && y >= ma->y0 && y <= ma->y1) {
@@ -86,11 +123,21 @@ public:
 				// is mapped to (0,0),(1,1)
 				x = (x - ma->x0) * (1.0f / (ma->x1 - ma->x0));
 				y = (y - ma->y0) * (1.0f / (ma->y1 - ma->y0));
+				area = ma;
 				return xx.first;
 			}
 		}
+		area = NULL;
 		return -1;
 	}
+
+	void update() {
+		for (auto& xx : initialsids) {
+			MorphArea* ma = xx.second;
+			ma->server->update();
+		}
+	}
+
 	SENSEL_HANDLE _handle;
 	std::map<int, MorphArea*> initialsids;
 	// int _initialsid;
@@ -116,12 +163,16 @@ public:
 			return -1;
 		}
 	}
+
+	void pressed(MorphArea* area, float x, float y, int uid, int id, float force);
+	void released(MorphArea* area, int uid);
+	void dragged(MorphArea* area, float x, float y, int uid, int id, float force);
 };
 
-class AllMorphs : public TuioDevice { 
+class AllMorphs { 
 	
 public:
-	AllMorphs(TuioServer* s, std::map<unsigned char*,unsigned char*> );
+	AllMorphs(std::map<unsigned char*,unsigned char*> );
 	~AllMorphs() {
 	};
 	
@@ -129,9 +180,11 @@ public:
 
 	void run();
 	bool init();
+#if 0
 	void pressed(float x, float y, int uid, int id, float force);
 	void released(int uid);
 	void dragged(float x, float y, int uid, int id, float force);
+#endif
 
 private:
 

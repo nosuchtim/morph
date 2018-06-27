@@ -88,9 +88,6 @@
     <ClInclude Include="..\src\tuio\TuioCursor.h">
       <Filter>Source Files\TUIO</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\tuio\TuioDevice.h">
-      <Filter>Source Files\TUIO</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\tuio\TuioListener.h">
       <Filter>Source Files\TUIO</Filter>
     </ClInclude>

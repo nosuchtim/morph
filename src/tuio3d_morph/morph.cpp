@@ -30,6 +30,7 @@
 #include <map>
 
 using namespace TUIO;
+extern int Verbose;
 
 volatile sig_atomic_t ctrl_c_requested = false;
 
@@ -38,7 +39,7 @@ void handle_ctrl_c(int sig)
 	ctrl_c_requested = true;
 }
 
-AllMorphs::AllMorphs(TuioServer* s, std::map<unsigned char*,unsigned char*> serialmap) : TuioDevice(s) {
+AllMorphs::AllMorphs(std::map<unsigned char*,unsigned char*> serialmap) {
 
 	SenselDeviceList devlist;
 
@@ -46,9 +47,11 @@ AllMorphs::AllMorphs(TuioServer* s, std::map<unsigned char*,unsigned char*> seri
 
 	// If no explicit serialmap is given, we create one.
 	if (serialmap.size() == 0) {
+		int sidinitial = 10000;
+		int sidmultiplier = 1000;
 		for (int i = 0; i < devlist.num_devices; i++) {
 			SenselDeviceID& dev = devlist.devices[i];
-			std::string sd = NosuchSnprintf("%d",server->sidInitial + i*(server->sidDeviceMultiplier));
+			std::string sd = NosuchSnprintf("%d",sidinitial + i*(sidmultiplier));
 			serialmap.insert(std::pair<unsigned char*, unsigned char*>(dev.serial_num, (unsigned char*)sd.c_str()));
 		}
 	}
@@ -96,23 +99,23 @@ AllMorphs::init()
 	return true;
 }
 
-void AllMorphs::pressed(float x, float y, int sid, int cid, float force) {
-
-	if (server->verbose > 1) {
-		fprintf(stdout, "PRESSED sid=%d cid=%d\n", sid, cid);
+void OneMorph::pressed(MorphArea* area, float x, float y, int sid, int cid, float force) {
+	if (Verbose > 1) {
+		fprintf(stdout, "PRESSED sid=%d\n", sid);
 	}
-	TuioCursor *c = server->addTuioCursorId(x,y,sid,cid);
+	TuioCursor *c = area->server->addTuioCursorId(x,y,sid,cid);
 	c->setForce(force);
-
-	// std::list<TuioCursor*> cursorList = server->getTuioCursors();
 }
 
-void AllMorphs::dragged(float x, float y, int sid, int cid, float force) {
-	if (server->verbose > 1) {
+void OneMorph::dragged(MorphArea* area, float x, float y, int sid, int cid, float force) {
+
+	TuioCursor *match = NULL;
+
+	if (Verbose > 1) {
 		fprintf(stdout, "DRAGGED sid=%d\n", sid);
 	}
-	TuioCursor *match = NULL;
-	std::list<TuioCursor*> cursorList = server->getTuioCursors();
+	std::list<TuioCursor*> cursorList = area->server->getTuioCursors();
+
 	// XXX - use auto here
 	for (std::list<TuioCursor*>::iterator tuioCursor = cursorList.begin(); tuioCursor!=cursorList.end(); tuioCursor++) {
 		if (((*tuioCursor)->getSessionID()) == sid) {
@@ -121,22 +124,22 @@ void AllMorphs::dragged(float x, float y, int sid, int cid, float force) {
 		}
 	}
 	if ( match == NULL ) {
-		if (server->verbose > 0) {
+		if (Verbose > 0) {
 			fprintf(stdout, "Drag seen without press? Automatically pressing.  sid=%d\n", sid);
 		}
-		match = server->addTuioCursorId(x,y,sid,cid);
+		match = area->server->addTuioCursorId(x,y,sid,cid);
 	} else {
-		server->updateTuioCursor(match,x,y);
+		area->server->updateTuioCursor(match,x,y);
 		match->setForce(force);
 	}
 }
 
-void AllMorphs::released(int sid) {
+void OneMorph::released(MorphArea* area, int sid) {
 	// printf("released  uid=%d id=%d\n",uid,id);
-	if (server->verbose > 1) {
+	if (Verbose > 1) {
 		fprintf(stdout, "RELEASED sid=%d\n", sid);
 	}
-	std::list<TuioCursor*> cursorList = server->getTuioCursors();
+	std::list<TuioCursor*> cursorList = area->server->getTuioCursors();
 	TuioCursor *match = NULL;
 	// XXX - use auto here
 	for (std::list<TuioCursor*>::iterator tuioCursor = cursorList.begin(); tuioCursor!=cursorList.end(); tuioCursor++) {
@@ -146,7 +149,7 @@ void AllMorphs::released(int sid) {
 		}
 	}
 	if (match!=NULL) {
-		server->removeTuioCursor(match);
+		area->server->removeTuioCursor(match);
 	}
 }
 
@@ -178,7 +181,7 @@ void AllMorphs::run() {
 			senselGetNumAvailableFrames(h, &num_frames);
 			for (unsigned int f = 0; f < num_frames; f++) {
 				senselGetFrame(h, frame);
-				if (server->verbose > 2 && frame->n_contacts > 0) {
+				if (Verbose > 2 && frame->n_contacts > 0) {
 					printf("FRAME f=%d n_contacts=%d\n", f, frame->n_contacts);
 				}
 				for (int i = 0; i < frame->n_contacts; i++) {
@@ -204,14 +207,15 @@ void AllMorphs::run() {
 					float y_norm = y_mm / MORPH_HEIGHT;
 					float f_norm = force / MORPH_MAX_FORCE;
 		
-					if (server->verbose > 2) {
+					if (Verbose > 2) {
 						fprintf(stdout, "Serial: %s   Contact ID: %d   State: %s   xy=%.4f,%.4f\n",
 							morph->_serialnum, c.id, statestr, x_mm, y_mm);
 					}
 		
 					// Note: this method figures out which area we're in,
 					// and normalizes the coordinates within it to (0,0),(1,1)
-					int sid = morph->mapToSidArea(x_norm,y_norm) + c.id;
+					MorphArea* area;
+					int sid = morph->mapToSidArea(x_norm,y_norm,area) + c.id;
 					if (sid < 0) {
 						fprintf(stdout, "Warning, no sid for that position on that pad!");
 						continue;
@@ -223,10 +227,10 @@ void AllMorphs::run() {
 						}
 						// This is what happens when you drag across a region boundary.
 						// So, we release the previous sid and press the new one.
-						if (server->verbose > 1) {
+						if (Verbose > 1) {
 							fprintf(stdout, "======= CROSS-AREA DRAG! state was %d c.id=%d previousSid=%d sid=%d\n", c.state, c.id, previousSid, sid);
 						}
-						released(previousSid);
+						morph->released(area,previousSid);
 						morph->unsetPreviousSid(c.id);
 
 						// XXXXX - for some reason, if I try to
@@ -241,7 +245,7 @@ void AllMorphs::run() {
 
 					morph->setPreviousSid(c.id, sid);
 
-					if (server->verbose > 2) {
+					if (Verbose > 2) {
 						fprintf(stdout, "Serial: %s   Contact ID: %d   Session ID: %d   State: %s   xy=%.4f,%.4f\n",
 							morph->_serialnum, c.id, sid, statestr, x_mm, y_mm);
 					}
@@ -251,17 +255,17 @@ void AllMorphs::run() {
 					{
 					case CONTACT_START:
 						event = "start";
-						pressed(x_norm, y_norm, sid, c.id, f_norm);
+						morph->pressed(area, x_norm, y_norm, sid, c.id, f_norm);
 						break;
 
 					case CONTACT_MOVE:
 						event = "move";
-						dragged(x_norm, y_norm, sid, c.id, f_norm);
+						morph->dragged(area, x_norm, y_norm, sid, c.id, f_norm);
 						break;
 
 					case CONTACT_END:
 						event = "end";
-						released(sid);
+						morph->released(area, sid);
 						morph->unsetPreviousSid(c.id);
 						break;
 
@@ -274,9 +278,9 @@ void AllMorphs::run() {
 					// 	"major=%f, minor=%f, orientation=%f\n",
 					// 	id, event, x_mm, y_mm, force, major, minor, orientation);
 				}
-		
-				server->update();
 			}
+			TuioServer::updateAllServers();
+			// morph->update();
 		}
 
 		Sleep(1);  // some sort of throttle is probably needed

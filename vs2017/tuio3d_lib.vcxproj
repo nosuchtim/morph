@@ -186,7 +186,6 @@
     <ClInclude Include="..\src\misc\xgetopt.h" />
     <ClInclude Include="..\src\tuio\TuioContainer.h" />
     <ClInclude Include="..\src\tuio\TuioCursor.h" />
-    <ClInclude Include="..\src\tuio\TuioDevice.h" />
     <ClInclude Include="..\src\tuio\TuioListener.h" />
     <ClInclude Include="..\src\tuio\TuioPoint.h" />
     <ClInclude Include="..\src\tuio\TuioServer.h" />

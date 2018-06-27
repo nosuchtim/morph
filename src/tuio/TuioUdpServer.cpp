@@ -26,6 +26,8 @@
 using namespace TUIO;
 using namespace osc;
 
+extern int Verbose;
+
 #ifndef WIN32
 static void* ThreadFunc( void* obj )
 #else
@@ -76,17 +78,17 @@ void TuioUdpServer::sendFullMessages() {
 	
 	// add the cursor alive message
 	(*fullPacket) << osc::BeginMessage( "/tuio/25Dcur") << "alive";
-	if ( verbose > 2 ) {
+	if ( Verbose > 2 ) {
 		std::cout << "/tuio/25Dcur alive ";
 	}
 	for (std::list<TuioCursor*>::iterator tuioCursor = cursorList.begin(); tuioCursor!=cursorList.end(); tuioCursor++) {
 		(*fullPacket) << (int32)((*tuioCursor)->getSessionID());	
-		if ( verbose > 2 ) {
+		if ( Verbose > 2 ) {
 			std::cout << " " << (int32)((*tuioCursor)->getSessionID());	
 		}
 	}
 	(*fullPacket) << osc::EndMessage;	
-	if ( verbose > 2 ) {
+	if ( Verbose > 2 ) {
 		std::cout << std::endl;
 	}
 
@@ -100,7 +102,7 @@ void TuioUdpServer::sendFullMessages() {
 			(*fullPacket) << osc::BeginMessage( "/tuio/25Dcur") << "fseq" << -1 << osc::EndMessage;
 			(*fullPacket) << osc::EndBundle;
 			socket->Send( fullPacket->Data(), fullPacket->Size() );
-			if ( verbose > 2 ) {
+			if ( Verbose > 2 ) {
 				std::cout << "/tuio/25Dcur fseq -1" << std::endl;
 			}
 
@@ -110,17 +112,17 @@ void TuioUdpServer::sendFullMessages() {
 			
 			// add the cursor alive message
 			(*fullPacket) << osc::BeginMessage( "/tuio/25Dcur") << "alive";
-			if ( verbose > 2 ) {
+			if ( Verbose > 2 ) {
 				std::cout << "/tuio/25Dcur alive";
 			}
 			for (std::list<TuioCursor*>::iterator tuioCursor = cursorList.begin(); tuioCursor!=cursorList.end(); tuioCursor++) {
 				(*fullPacket) << (int32)((*tuioCursor)->getSessionID());	
-				if ( verbose > 2 ) {
+				if ( Verbose > 2 ) {
 					std::cout << " " << (int32)((*tuioCursor)->getSessionID());	
 				}
 			}
 			(*fullPacket) << osc::EndMessage;				
-			if ( verbose > 2 ) {
+			if ( Verbose > 2 ) {
 				std::cout << std::endl;
 			}
 		}
@@ -139,7 +141,7 @@ void TuioUdpServer::sendFullMessages() {
 		(*fullPacket) << (int32)((*tuioCursor)->getSessionID()) << x << y << (*tuioCursor)->getForce();
 		(*fullPacket) << (*tuioCursor)->getXSpeed() << (*tuioCursor)->getYSpeed() << (*tuioCursor)->getForceSpeed() <<(*tuioCursor)->getMotionAccel();	
 		(*fullPacket) << osc::EndMessage;	
-		if ( verbose ) {
+		if ( Verbose ) {
 			std::cout << "/tuio/25Dcur set"
 				<< " " << (int32)((*tuioCursor)->getSessionID()) << " " << x << " " << y << " " << (*tuioCursor)->getForce()
 				<< " " << (*tuioCursor)->getXSpeed() << " " << (*tuioCursor)->getYSpeed() << " " << (*tuioCursor)->getForceSpeed() << " " <<(*tuioCursor)->getMotionAccel()
@@ -151,26 +153,28 @@ void TuioUdpServer::sendFullMessages() {
 	(*fullPacket) << osc::BeginMessage( "/tuio/25Dcur") << "fseq" << -1 << osc::EndMessage;
 	(*fullPacket) << osc::EndBundle;
 	socket->Send( fullPacket->Data(), fullPacket->Size() );
-	if ( verbose > 2 ) {
+	if ( Verbose > 2 ) {
 		std::cout << "/tuio/25Dcur fseq -1" << std::endl;
 	}
 	
 }
 
-TuioUdpServer::TuioUdpServer(const char *host, int port, int alive_interval) {
+TuioUdpServer::TuioUdpServer(std::string host, int port, int alive_interval) {
 	alive_update_interval = alive_interval;
 	// If the alive_update_interval is 0, there won't be any periodic update
 	periodic_update = (alive_update_interval > 0);
 	initialize(host,port);
 }
 
-void TuioUdpServer::initialize(const char *host, int port) {
+void TuioUdpServer::initialize(std::string host, int port) {
+	hostname = host;
+	portnum = port;
 	int size = IP_MTU_SIZE;
 	if (size>MAX_UDP_SIZE) size = MAX_UDP_SIZE;
 	else if (size<MIN_UDP_SIZE) size = MIN_UDP_SIZE;
 
 	try {
-		long unsigned int ip = GetHostByName(host);
+		long unsigned int ip = GetHostByName(host.c_str());
 		socket = new UdpTransmitSocket(IpEndpointName(ip, port));
 
 		oscBuffer = new char[size];
@@ -183,7 +187,9 @@ void TuioUdpServer::initialize(const char *host, int port) {
 	}
 	
 	currentFrame = sessionID = maxCursorID = -1;
-	updateCursor = false;
+
+	clearUpdateCursor();
+
 	lastCursorUpdate = timeGetTime();
 	
 	sendEmptyCursorBundle();
@@ -203,14 +209,6 @@ TuioUdpServer::~TuioUdpServer() {
 	delete socket;
 }
 
-long TuioUdpServer::getFrameID() {
-	return currentFrame;
-}
-
-void TuioUdpServer::initFrame() {
-	currentFrame++;
-}
-
 void TuioUdpServer::commitFrame() {
 	
 	if(updateCursor) {
@@ -219,37 +217,36 @@ void TuioUdpServer::commitFrame() {
 			
 			// start a new packet if we exceed the packet capacity
 			if ((oscPacket->Capacity()-oscPacket->Size())<CUR_MESSAGE_SIZE) {
-				sendCursorBundle(currentFrame);
+				sendCursorBundle(++currentFrame);
 				startCursorBundle();
 			}
 
 			TuioCursor *tcur = (*tuioCursor);
 			addCursorMessage(tcur);				
 		}
-		sendCursorBundle(currentFrame);
+		sendCursorBundle(++currentFrame);
 	} else if (periodic_update) {
 		long milli = timeGetTime();
 		long dt = milli - lastCursorUpdate;
 		if ( dt > alive_update_interval ) {
 			lastCursorUpdate = milli;
 			startCursorBundle();
-			sendCursorBundle(currentFrame);
+			sendCursorBundle(++currentFrame);
 		}
 	}
-	updateCursor = false;
 }
 
 void TuioUdpServer::sendEmptyCursorBundle() {
 	oscPacket->Clear();	
 	(*oscPacket) << osc::BeginBundleImmediate;
 	(*oscPacket) << osc::BeginMessage( "/tuio/25Dcur") << "alive" << osc::EndMessage;	
-	if ( verbose > 2 ) {
+	if ( Verbose > 2 ) {
 		std::cout << "/tuio/25Dcur alive" << std::endl;
 	}
 	(*oscPacket) << osc::BeginMessage( "/tuio/25Dcur") << "fseq" << -1 << osc::EndMessage;
 	(*oscPacket) << osc::EndBundle;
 	socket->Send( oscPacket->Data(), oscPacket->Size() );
-	if ( verbose > 2 ) {
+	if ( Verbose > 2 ) {
 		std::cout << "/tuio/25Dcur fseq -1" << std::endl;
 	}
 }
@@ -259,17 +256,17 @@ void TuioUdpServer::startCursorBundle() {
 	(*oscPacket) << osc::BeginBundleImmediate;
 	
 	(*oscPacket) << osc::BeginMessage( "/tuio/25Dcur") << "alive";
-	if ( verbose > 2 ) {
+	if ( Verbose > 2 ) {
 		std::cout << "/tuio/25Dcur alive";
 	}
 	for (std::list<TuioCursor*>::iterator tuioCursor = cursorList.begin(); tuioCursor!=cursorList.end(); tuioCursor++) {
-		if ( verbose > 2 ) {
+		if ( Verbose > 2 ) {
 			std::cout << " " << (int32)((*tuioCursor)->getSessionID());	
 		}
 		(*oscPacket) << (int32)((*tuioCursor)->getSessionID());	
 	}
 	(*oscPacket) << osc::EndMessage;	
-	if ( verbose > 2 ) {
+	if ( Verbose > 2 ) {
 		std::cout << std::endl;
 	}
 }
@@ -288,7 +285,7 @@ void TuioUdpServer::addCursorMessage(TuioCursor *tcur) {
 	 (*oscPacket) << (int32)(tcur->getSessionID()) << x << y << tcur->getForce();
 	 (*oscPacket) << tcur->getXSpeed() << tcur->getYSpeed() << tcur->getForceSpeed() << tcur->getMotionAccel() ;	
 	 (*oscPacket) << osc::EndMessage;
-	if ( verbose ) {
+	if ( Verbose ) {
 		std::cout << "/tuio/25Dcur set"
 			<< " " << (int32)(tcur->getSessionID()) << " " << x << " " << y << " " << tcur->getForce()
 			<< " " << tcur->getXSpeed() << " " << tcur->getYSpeed() << " " << tcur->getForceSpeed() << " " << tcur->getMotionAccel()
@@ -300,7 +297,7 @@ void TuioUdpServer::sendCursorBundle(long fseq) {
 	(*oscPacket) << osc::BeginMessage( "/tuio/25Dcur") << "fseq" << (int32)fseq << osc::EndMessage;
 	(*oscPacket) << osc::EndBundle;
 	socket->Send( oscPacket->Data(), oscPacket->Size() );
-	if ( verbose > 2 ) {
+	if ( Verbose > 2 ) {
 		std::cout << "/tuio/25Dcur fseq " << (int32)fseq << std::endl;
 	}
 }

@@ -24,12 +24,15 @@
 
 using namespace TUIO;
 
+extern int Verbose;
+extern bool FlipX;
+extern bool FlipY;
+
+std::list<TuioServer*> TuioServer::allservers;
+
 TuioServer::TuioServer() {
-	verbose = 0;
-	sidInitial = 10000;
-	sidDeviceMultiplier = 1000;
-	flipX = false;
-	flipY = false;
+	flipX = FlipX;
+	flipY = FlipY;
 }
 
 TuioServer::~TuioServer() {
@@ -66,9 +69,10 @@ TuioCursor* TuioServer::addTuioCursor(float x, float y) {
 	
 	TuioCursor *tcur = new TuioCursor(sessionID, cursorID, x, y);
 	cursorList.push_back(tcur);
-	updateCursor = true;
 
-	if (verbose > 2) 
+	setUpdateCursor();
+
+	if (Verbose > 2) 
 		std::cout << "add cur " << tcur->getCursorID() << " (" <<  tcur->getSessionID() << ") " << tcur->getX() << " " << tcur->getY() << std::endl;
 
 	return tcur;
@@ -83,21 +87,25 @@ TuioCursor* TuioServer::addTuioCursorId(float x, float y, int uid, int id) {
 	
 	TuioCursor *tcur = new TuioCursor(sessionID, cursorID, x, y);
 	cursorList.push_back(tcur);
-	updateCursor = true;
 
-	if (verbose > 2) 
+	setUpdateCursor();
+
+	if (Verbose > 2) 
 		std::cout << "add cur " << tcur->getCursorID() << " (" <<  tcur->getSessionID() << ") " << tcur->getX() << " " << tcur->getY() << std::endl;
 
 	return tcur;
 }
 
 void TuioServer::updateTuioCursor(TuioCursor *tcur,float x, float y) {
-	if (tcur==NULL) return;
+	if (tcur == NULL) {
+		return;
+	}
 	adjustXY(x, y);
 	tcur->update(x,y);
-	updateCursor = true;
 
-	if (verbose > 2 && tcur->isMoving())	 	
+	setUpdateCursor();
+
+	if (Verbose > 2 && tcur->isMoving())	 	
 		std::cout << "set cur " << tcur->getCursorID() << " (" <<  tcur->getSessionID() << ") " << tcur->getX() << " " << tcur->getY() 
 		<< " " << tcur->getXSpeed() << " " << tcur->getYSpeed() << " " << tcur->getMotionAccel() << " " << std::endl;
 }
@@ -106,9 +114,9 @@ void TuioServer::removeTuioCursor(TuioCursor *tcur) {
 	if (tcur==NULL) return;
 	cursorList.remove(tcur);
 	tcur->remove();
-	updateCursor = true;
+	setUpdateCursor();
 
-	if (verbose > 2)
+	if (Verbose > 2)
 		std::cout << "del cur " << tcur->getCursorID() << " (" <<  tcur->getSessionID() << ")" << std::endl;
 
 	if (tcur->getCursorID()==maxCursorID) {

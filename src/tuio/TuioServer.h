@@ -67,19 +67,52 @@ namespace TUIO {
 		TuioCursor* getClosestTuioCursor(float xp, float yp);
 		bool isConnected() { return connected; }
 
-		int verbose;
 		int sidInitial;
 		int sidDeviceMultiplier;
 		bool flipX;
 		bool flipY;
 		
 		virtual void update() { }
+		virtual bool matches(std::string h, int p) {
+			fprintf(stdout, "this matches should not be called!\n");
+			return false;
+		}
+
+		virtual void clearUpdateCursor() {
+			fprintf(stdout, "this clearUpdateCursor should not be called!\n");
+		}
+		virtual void setUpdateCursor() {
+			fprintf(stdout, "this setUpdateCursor should not be called!\n");
+		}
+
+		static TuioServer* findServer(std::string host, int port) {
+			for (auto& x : allservers) {
+				if (x->matches(host, port)) {
+					return x;
+				}
+			}
+			return NULL;
+		}
+
+		static void addServerToList(TuioServer* s) {
+			allservers.push_back(s);
+		}
+
+		static void updateAllServers() {
+			for (auto& server : allservers) {
+				server->update();
+			}
+			for (auto& server : allservers) {
+				server->clearUpdateCursor();
+			}
+		}
+
+		static std::list<TuioServer*> allservers;
 
 	protected:
 		std::list<TuioCursor*> cursorList;
 		long sessionID;
 		int maxCursorID;
-		bool updateCursor;
 		long lastCursorUpdate;
 		bool connected;
 

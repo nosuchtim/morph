@@ -49,14 +49,10 @@ namespace TUIO {
 	class TuioUdpServer : public TuioServer {
 	public:
 		//
-		TuioUdpServer(const char *host, int port, int alive_interval);
+		TuioUdpServer(std::string host, int port, int alive_interval);
 		~TuioUdpServer();
 
-		// void setAliveUpdateInterval(int milli) {
-		// 	alive_update_interval = milli;
-		// }
-
-		void initialize(const char *host, int port);
+		void initialize(std::string host, int port);
 		void sendFullMessages();
 		void enablePeriodicMessages(int interval = 1);
 		void disablePeriodicMessages();
@@ -73,21 +69,33 @@ namespace TUIO {
 
 		void update() {
 			try {
-				initFrame();
-				// check?
+				// Should there be a sleep in here?
 				commitFrame();
 			} catch (std::exception &e) { 
 				std::cout << "error in TuioUdpServer::update, msg = " << e.what() << std::endl;
 			}
 		}
 
+		bool matches(std::string h, int p) {
+			return hostname == h && portnum == p;
+		}
+
+		void clearUpdateCursor() {
+			updateCursor = false;
+		}
+
+		void setUpdateCursor() {
+			updateCursor = true;
+		}
+
+
+
+
 	private:
 
-		void initFrame();
 		void commitFrame();
 
-		long getFrameID();
-		TuioTime getFrameTime();
+		bool updateCursor;
 
 		int alive_update_interval;
 		bool periodic_update;
@@ -99,6 +107,9 @@ namespace TUIO {
 		osc::OutboundPacketStream  *fullPacket;
 		char *fullBuffer; 
 		long currentFrame;
+
+		std::string hostname;
+		int portnum;
 
 #ifndef WIN32
 		pthread_t thread;
