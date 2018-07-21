@@ -38,8 +38,9 @@ extern int Alive_update_interval;
 using namespace TUIO;
 
 #define MORPH_MAX_FORCE 1000.0f
-#define MORPH_WIDTH 230
-#define MORPH_HEIGHT 130
+
+#define MORPH_WIDTH 240
+#define MORPH_HEIGHT 139
 #define MAX_IGESTURE_ID 12
 
 class MorphArea {

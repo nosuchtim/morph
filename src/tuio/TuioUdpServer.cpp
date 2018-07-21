@@ -137,61 +137,62 @@ void TuioUdpServer::sendFullMessages() {
 		}
 
 		// add the actual cursor set message
-		(*fullPacket) << osc::BeginMessage( "/tuio/25Dcur") << "set";
+		(*fullPacket) << osc::BeginMessage("/tuio/25Dcur") << "set";
 		(*fullPacket) << (int32)((*tuioCursor)->getSessionID()) << x << y << (*tuioCursor)->getForce();
-		(*fullPacket) << (*tuioCursor)->getXSpeed() << (*tuioCursor)->getYSpeed() << (*tuioCursor)->getForceSpeed() <<(*tuioCursor)->getMotionAccel();	
-		(*fullPacket) << osc::EndMessage;	
-		if ( Verbose ) {
+		(*fullPacket) << (*tuioCursor)->getXSpeed() << (*tuioCursor)->getYSpeed() << (*tuioCursor)->getForceSpeed() << (*tuioCursor)->getMotionAccel();
+		(*fullPacket) << osc::EndMessage;
+		if (Verbose) {
 			std::cout << "/tuio/25Dcur set"
 				<< " " << (int32)((*tuioCursor)->getSessionID()) << " " << x << " " << y << " " << (*tuioCursor)->getForce()
-				<< " " << (*tuioCursor)->getXSpeed() << " " << (*tuioCursor)->getYSpeed() << " " << (*tuioCursor)->getForceSpeed() << " " <<(*tuioCursor)->getMotionAccel()
+				<< " " << (*tuioCursor)->getXSpeed() << " " << (*tuioCursor)->getYSpeed() << " " << (*tuioCursor)->getForceSpeed() << " " << (*tuioCursor)->getMotionAccel()
 				<< std::endl;
 		}
 	}
-	
+
 	// add the immediate fseq message and send the cursor packet
-	(*fullPacket) << osc::BeginMessage( "/tuio/25Dcur") << "fseq" << -1 << osc::EndMessage;
+	(*fullPacket) << osc::BeginMessage("/tuio/25Dcur") << "fseq" << -1 << osc::EndMessage;
 	(*fullPacket) << osc::EndBundle;
-	socket->Send( fullPacket->Data(), fullPacket->Size() );
-	if ( Verbose > 2 ) {
+	socket->Send(fullPacket->Data(), fullPacket->Size());
+	if (Verbose > 2) {
 		std::cout << "/tuio/25Dcur fseq -1" << std::endl;
 	}
-	
+
 }
 
 TuioUdpServer::TuioUdpServer(std::string host, int port, int alive_interval) {
 	alive_update_interval = alive_interval;
 	// If the alive_update_interval is 0, there won't be any periodic update
 	periodic_update = (alive_update_interval > 0);
-	initialize(host,port);
+	initialize(host, port);
 }
 
 void TuioUdpServer::initialize(std::string host, int port) {
 	hostname = host;
 	portnum = port;
 	int size = IP_MTU_SIZE;
-	if (size>MAX_UDP_SIZE) size = MAX_UDP_SIZE;
-	else if (size<MIN_UDP_SIZE) size = MIN_UDP_SIZE;
+	if (size > MAX_UDP_SIZE) size = MAX_UDP_SIZE;
+	else if (size < MIN_UDP_SIZE) size = MIN_UDP_SIZE;
 
 	try {
 		long unsigned int ip = GetHostByName(host.c_str());
 		socket = new UdpTransmitSocket(IpEndpointName(ip, port));
 
 		oscBuffer = new char[size];
-		oscPacket = new osc::OutboundPacketStream(oscBuffer,size);
+		oscPacket = new osc::OutboundPacketStream(oscBuffer, size);
 		fullBuffer = new char[size];
-		fullPacket = new osc::OutboundPacketStream(fullBuffer,size);
-	} catch (std::exception &e) { 
+		fullPacket = new osc::OutboundPacketStream(fullBuffer, size);
+	}
+	catch (std::exception &e) {
 		std::cout << "could not create socket: " << e.what() << std::endl;
 		socket = NULL;
 	}
-	
+
 	currentFrame = sessionID = maxCursorID = -1;
 
 	clearUpdateCursor();
 
 	lastCursorUpdate = timeGetTime();
-	
+
 	sendEmptyCursorBundle();
 
 	connected = true;
@@ -203,26 +204,50 @@ TuioUdpServer::~TuioUdpServer() {
 	sendEmptyCursorBundle();
 
 	delete oscPacket;
-	delete []oscBuffer;
+	delete[]oscBuffer;
 	delete fullPacket;
-	delete []fullBuffer;
+	delete[]fullBuffer;
 	delete socket;
 }
 
 void TuioUdpServer::commitFrame() {
-	
-	if(updateCursor) {
+
+	if (updateCursor) {
 		startCursorBundle();
-		for (std::list<TuioCursor*>::iterator tuioCursor = cursorList.begin(); tuioCursor!=cursorList.end(); tuioCursor++) {
-			
+		for (std::list<TuioCursor*>::iterator tuioCursor = cursorList.begin(); tuioCursor != cursorList.end(); ) {
+
 			// start a new packet if we exceed the packet capacity
-			if ((oscPacket->Capacity()-oscPacket->Size())<CUR_MESSAGE_SIZE) {
+			if ((oscPacket->Capacity() - oscPacket->Size()) < CUR_MESSAGE_SIZE) {
 				sendCursorBundle(++currentFrame);
 				startCursorBundle();
 			}
 
 			TuioCursor *tcur = (*tuioCursor);
-			addCursorMessage(tcur);				
+
+			long tm = timeGetTime();
+
+			// If it's too old, remove it.  There's an intermittent bug somewhere
+			// that occasionally leaves TuioCursors around, so this works around that.
+#define TOO_OLD 8000
+			if ( (tm - tcur->getCreationTime()) > TOO_OLD ) {
+				std::cout << "================== REMOVING TOO_OLD CURSOR!!!" << std::endl;
+				tuioCursor++;
+				cursorList.remove(tcur);
+				tcur->remove();
+				delete tcur;
+				std::cout << "================== AFTER REMOVING TOO_OLD CURSOR!!!" << std::endl;
+			} else {
+#if 0
+				std::cout << "===== commitFrame addCursorMessage"
+					<< " id=" << tcur->getCursorID()
+					<< " time=" << tcur->getCreationTime()
+					<< " currtime=" << tm
+					<< " age=" << (tm - tcur->getCreationTime())
+					<< std::endl;
+#endif
+				addCursorMessage(tcur);				
+				tuioCursor++;
+			}
 		}
 		sendCursorBundle(++currentFrame);
 	} else if (periodic_update) {

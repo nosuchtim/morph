@@ -69,7 +69,6 @@ int main(int argc, char **argv)
 	bool serialmap_filled = false;
 
 	while ((c = getopt(argc, (const char**)argv, "vxyV:a:f:h:i:lLm:p:s:")) != EOF) {
-		printf("Arg = %s\n",optarg);
 		switch (c) {
 		case _T('f'):
 			extern float ForceFactor;

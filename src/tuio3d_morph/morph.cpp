@@ -206,7 +206,15 @@ void AllMorphs::run() {
 					float x_norm = x_mm / MORPH_WIDTH;
 					float y_norm = y_mm / MORPH_HEIGHT;
 					float f_norm = force / MORPH_MAX_FORCE;
-		
+
+					if (x_norm > 1.0) {
+						x_norm = 1.0;
+					}
+					if (y_norm > 1.0) {
+						y_norm = 1.0;
+					}
+					// leave f_norm alone, let it go higher
+
 					if (Verbose > 2) {
 						fprintf(stdout, "Serial: %s   Contact ID: %d   State: %s   xy=%.4f,%.4f\n",
 							morph->_serialnum, c.id, statestr, x_mm, y_mm);
@@ -216,8 +224,8 @@ void AllMorphs::run() {
 					// and normalizes the coordinates within it to (0,0),(1,1)
 					MorphArea* area;
 					int sid = morph->mapToSidArea(x_norm,y_norm,area) + c.id;
-					if (sid < 0) {
-						fprintf(stdout, "Warning, no sid for that position on that pad!");
+					if (sid < 0 || area == NULL) {
+						fprintf(stdout, "Warning, no sid for that position on that pad! x_mm=%lf x_norm=%lf y_mm=%lf y_norm=%lf\n",x_mm,x_norm,y_mm,y_norm);
 						continue;
 					}
 					int previousSid = morph->previousSidFor(c.id);
