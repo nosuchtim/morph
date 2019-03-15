@@ -32,6 +32,8 @@
 using namespace TUIO;
 extern int Verbose;
 
+bool PrintList = false;
+
 volatile sig_atomic_t ctrl_c_requested = false;
 
 void handle_ctrl_c(int sig)
@@ -48,7 +50,7 @@ AllMorphs::AllMorphs(std::map<unsigned char*,unsigned char*> serialmap) {
 	// If no explicit serialmap is given, we create one.
 	if (serialmap.size() == 0) {
 		int sidinitial = 10000;
-		int sidmultiplier = 1000;
+		int sidmultiplier = SIDMULTIPLIER;
 		for (int i = 0; i < devlist.num_devices; i++) {
 			SenselDeviceID& dev = devlist.devices[i];
 			std::string sd = NosuchSnprintf("%d",sidinitial + i*(sidmultiplier));
@@ -137,9 +139,11 @@ void OneMorph::dragged(MorphArea* area, float x, float y, int sid, int cid, floa
 void OneMorph::released(MorphArea* area, int sid) {
 	// printf("released  uid=%d id=%d\n",uid,id);
 	if (Verbose > 1) {
-		fprintf(stdout, "RELEASED sid=%d\n", sid);
+		fprintf(stdout, "RELEASED sid=%d  server=%lld   server->sidInitial=%d\n", sid,  (long long) area->server, area->server->sidInitial);
+		// TuioServer::printAllLists();
 	}
 	std::list<TuioCursor*> cursorList = area->server->getTuioCursors();
+
 	TuioCursor *match = NULL;
 	// XXX - use auto here
 	for (std::list<TuioCursor*>::iterator tuioCursor = cursorList.begin(); tuioCursor!=cursorList.end(); tuioCursor++) {
@@ -151,6 +155,8 @@ void OneMorph::released(MorphArea* area, int sid) {
 	if (match!=NULL) {
 		area->server->removeTuioCursor(match);
 	}
+
+	// TuioServer::printAllLists();
 }
 
 void
@@ -238,8 +244,22 @@ void AllMorphs::run() {
 						if (Verbose > 1) {
 							fprintf(stdout, "======= CROSS-AREA DRAG! state was %d c.id=%d previousSid=%d sid=%d\n", c.state, c.id, previousSid, sid);
 						}
-						morph->released(area,previousSid);
+
+						MorphArea* previousArea = morph->areaForSid(previousSid);
+						if (previousArea) {
+							morph->released(previousArea,previousSid);
+						}
+						else {
+							fprintf(stdout, "UNABLE TO FIND AREA for previousSid=%d ?\n",previousSid);
+						}
+
 						morph->unsetPreviousSid(c.id);
+
+						// fprintf(stdout, "AFTER UNSETPREVIOUSSID cid=%d list dump follows\n", c.id);
+						// for (std::list<TuioCursor*>::iterator tuioCursor = cursorList.begin(); tuioCursor!=cursorList.end(); tuioCursor++) {
+						// 	TuioCursor* t = *tuioCursor;
+						// 	fprintf(stdout, "   CURSOR = %d\n",t->getSessionID());
+						// }
 
 						// XXXXX - for some reason, if I try to
 						// insert a fake CONTACT_START here (as opposed to
@@ -256,6 +276,7 @@ void AllMorphs::run() {
 					if (Verbose > 2) {
 						fprintf(stdout, "Serial: %s   Contact ID: %d   Session ID: %d   State: %s   xy=%.4f,%.4f\n",
 							morph->_serialnum, c.id, sid, statestr, x_mm, y_mm);
+						// TuioServer::printAllLists();
 					}
 		
 					char* event = "unknown";

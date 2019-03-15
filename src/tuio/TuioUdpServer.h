@@ -49,7 +49,7 @@ namespace TUIO {
 	class TuioUdpServer : public TuioServer {
 	public:
 		//
-		TuioUdpServer(std::string host, int port, int alive_interval);
+		TuioUdpServer(std::string host, int port, int alive_interval, int sidinit);
 		~TuioUdpServer();
 
 		void initialize(std::string host, int port);
@@ -71,7 +71,8 @@ namespace TUIO {
 			try {
 				// Should there be a sleep in here?
 				commitFrame();
-			} catch (std::exception &e) { 
+			}
+			catch (std::exception &e) {
 				std::cout << "error in TuioUdpServer::update, msg = " << e.what() << std::endl;
 			}
 		}
@@ -87,8 +88,6 @@ namespace TUIO {
 		void setUpdateCursor() {
 			updateCursor = true;
 		}
-
-
 
 
 	private:

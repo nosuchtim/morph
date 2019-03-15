@@ -99,6 +99,10 @@ namespace TUIO {
 		}
 
 		static void updateAllServers() {
+			extern bool PrintList;
+			if (PrintList) {
+				printAllLists();
+			}
 			for (auto& server : allservers) {
 				server->update();
 			}
@@ -108,6 +112,16 @@ namespace TUIO {
 		}
 
 		static std::list<TuioServer*> allservers;
+
+		static void printAllLists() {
+			for (auto& server : allservers) {
+				fprintf(stdout, "PRINTLIST for server=%d!\n",server->sidInitial);
+				for (std::list<TuioCursor*>::iterator tuioCursor = server->cursorList.begin(); tuioCursor != server->cursorList.end(); tuioCursor++) {
+					TuioCursor* t = *tuioCursor;
+					fprintf(stdout, "   CURSOR = %lld   sid=%d\n", (long long)t, t->getSessionID());
+				}
+			}
+		}
 
 	protected:
 		std::list<TuioCursor*> cursorList;

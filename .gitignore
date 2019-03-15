@@ -1,4 +1,3 @@
-
 JuceLibraryCode/
 BlocksSynth/
 
@@ -227,3 +226,7 @@ pip-log.txt
 *.db
 vs2015/TUIO3D_Sensel.VC.VC.opendb
 vs2015/TUIO3D_Sensel.VC.db
+vs2017/.vs/TUIO3D_Sensel/v15/Browse.VC.opendb
+vs2017/.vs/TUIO3D_Sensel/v15/Solution.VC.db-shm
+vs2017/.vs/TUIO3D_Sensel/v15/Solution.VC.db-wal
+vs2017/.vs/TUIO3D_Sensel/v15/Solution.VC.db-shm

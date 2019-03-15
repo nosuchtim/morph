@@ -57,6 +57,7 @@ void TuioUdpServer::enablePeriodicMessages(int interval) {
 #else
 	DWORD threadId;
 	thread = CreateThread( 0, 0, ThreadFunc, this, 0, &threadId );
+	std::cout << "CREATED THREAD TheadFunc, threadId = " << threadId << std::endl;
 #endif
 }
 
@@ -159,11 +160,12 @@ void TuioUdpServer::sendFullMessages() {
 
 }
 
-TuioUdpServer::TuioUdpServer(std::string host, int port, int alive_interval) {
+TuioUdpServer::TuioUdpServer(std::string host, int port, int alive_interval, int si) {
 	alive_update_interval = alive_interval;
 	// If the alive_update_interval is 0, there won't be any periodic update
 	periodic_update = (alive_update_interval > 0);
 	initialize(host, port);
+	sidInitial = si;
 }
 
 void TuioUdpServer::initialize(std::string host, int port) {
@@ -230,10 +232,11 @@ void TuioUdpServer::commitFrame() {
 			// that occasionally leaves TuioCursors around, so this works around that.
 #define TOO_OLD 8000
 			if ( (tm - tcur->getCreationTime()) > TOO_OLD ) {
-				std::cout << "================== REMOVING TOO_OLD CURSOR!!!" << std::endl;
+				std::cout << "================== REMOVING TOO_OLD CURSOR!!!  tcur=" << (long long) tcur << std::endl;
 				tuioCursor++;
 				cursorList.remove(tcur);
 				tcur->remove();
+				std::cout << "DELETING tcur=" << (long long)tcur << std::endl;
 				delete tcur;
 				std::cout << "================== AFTER REMOVING TOO_OLD CURSOR!!!" << std::endl;
 			} else {
@@ -296,6 +299,13 @@ void TuioUdpServer::startCursorBundle() {
 	}
 }
 
+bool isZero(float f) {
+	if (f < 0.0000001 && f > -0.0000001)
+		return true;
+	else
+		return false;
+}
+
 void TuioUdpServer::addCursorMessage(TuioCursor *tcur) {
 
 	(*oscPacket) << osc::BeginMessage( "/tuio/25Dcur") << "set";
@@ -315,6 +325,20 @@ void TuioUdpServer::addCursorMessage(TuioCursor *tcur) {
 			<< " " << (int32)(tcur->getSessionID()) << " " << x << " " << y << " " << tcur->getForce()
 			<< " " << tcur->getXSpeed() << " " << tcur->getYSpeed() << " " << tcur->getForceSpeed() << " " << tcur->getMotionAccel()
 			<< std::endl;
+#if 0
+		if (isZero(tcur->getXSpeed() ) && isZero(tcur->getYSpeed() ) && isZero(tcur->getForceSpeed() ) && isZero(tcur->getMotionAccel() )) {
+			static TuioCursor *lastbug = NULL;
+			std::cout << "HEY!!  BUG??  tcur=" << (long long)(tcur) << "  length=" << cursorList.size() << std::endl;
+			for (std::list<TuioCursor*>::iterator t = cursorList.begin(); t != cursorList.end(); t++) {
+				TuioCursor *tcur = (*t);
+				std::cout << "tcur=" << (long long)tcur << "  sessionid=" << (int32)((*t)->getSessionID()) << std::endl;
+			}
+			if (tcur == lastbug) {
+				std::cout << "HEY!!  REPEATED CURSOR BUG??  tcur=" << (long long)(tcur) << std::endl;
+			}
+			lastbug = tcur;
+		}
+#endif
 	}
 }
 

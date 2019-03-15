@@ -64,11 +64,32 @@ TuioCursor* TuioServer::addTuioCursor(float x, float y) {
 		TuioCursor *freeCursor = (*closestCursor);
 		cursorID = (*closestCursor)->getCursorID();
 		freeCursorList.erase(closestCursor);
+		std::cout << "DELETING freeCursor=" << (long long)freeCursor << std::endl;
 		delete freeCursor;
 	} else maxCursorID = cursorID;	
 	
 	TuioCursor *tcur = new TuioCursor(sessionID, cursorID, x, y);
+
+	std::cout << "ADDING TO CURSORLIST!  tcur=" << (long long)tcur << "  sid=" << tcur->getSessionID() << std::endl;
 	cursorList.push_back(tcur);
+
+	for (std::list<TuioCursor*>::iterator t = cursorList.begin(); t != cursorList.end(); t++) {
+		TuioCursor *tc = (*t);
+		std::cout << "ADDED A tcur=" << (long long)tc << "  sessionid=" << (long)((*t)->getSessionID()) << std::endl;
+	}
+
+	// Check for duplicates.  Silly inefficient, just to find bug
+	std::list<TuioCursor*>::iterator clist1;
+	for (clist1 = cursorList.begin(); clist1 != cursorList.end(); clist1++) {
+		TuioCursor *t1 = *clist1;
+		std::list<TuioCursor*>::iterator clist2;
+		for (clist2 = cursorList.begin(); clist2 != cursorList.end(); clist2++) {
+			TuioCursor *t2 = *clist2;
+			if (t1 != t2 && t1->getSessionID() == t2->getSessionID()) {
+				std::cout << "DUPLICATE SESSION IDS!!" << std::endl;
+			}
+		}
+	}
 
 	setUpdateCursor();
 
@@ -86,7 +107,40 @@ TuioCursor* TuioServer::addTuioCursorId(float x, float y, int uid, int id) {
 	int cursorID = id;
 	
 	TuioCursor *tcur = new TuioCursor(sessionID, cursorID, x, y);
+
+    // For some reason, the list may already contain a cursor with the same sessionID.
+	// Possible reason - not receiving a CONTACT_END
+	for (std::list<TuioCursor*>::iterator t = cursorList.begin(); t != cursorList.end(); t++) {
+		TuioCursor *tc = (*t);
+		if ( sessionID == tc->getSessionID() ) {
+			std::cout << "===================================================================== FOUND DUPLICATE SESSIONID! sessionid=" << (long)((*t)->getSessionID()) << std::endl;
+			removeTuioCursor(tc);
+			std::cout << "========================================================================== REMOVED tc= " << (long long)tc << std::endl;
+			// Can't continue unless we restart the iterator, or use the iterator methods for removing an entry
+			break;
+		}
+	}
+
 	cursorList.push_back(tcur);
+
+	// for (std::list<TuioCursor*>::iterator t = cursorList.begin(); t != cursorList.end(); t++) {
+	// 	TuioCursor *tc = (*t);
+	// 	DWORD dw = GetCurrentThreadId();
+	// 	std::cout << "thread="<<dw<<" ADDED B tcur=" << (long long)tc << "  sessionid=" << (long)((*t)->getSessionID()) << std::endl;
+	// }
+
+	// Check for duplicates.  Silly inefficient, just to find bug
+	std::list<TuioCursor*>::iterator clist1;
+	for (clist1 = cursorList.begin(); clist1 != cursorList.end(); clist1++) {
+		TuioCursor *t1 = *clist1;
+		std::list<TuioCursor*>::iterator clist2;
+		for (clist2 = cursorList.begin(); clist2 != cursorList.end(); clist2++) {
+			TuioCursor *t2 = *clist2;
+			if (t1 != t2 && t1->getSessionID() == t2->getSessionID()) {
+				std::cout << "DUPLICATE SESSION IDS!!" << std::endl;
+			}
+		}
+	}
 
 	setUpdateCursor();
 
@@ -111,16 +165,34 @@ void TuioServer::updateTuioCursor(TuioCursor *tcur,float x, float y) {
 }
 
 void TuioServer::removeTuioCursor(TuioCursor *tcur) {
-	if (tcur==NULL) return;
+	if (tcur == NULL) {
+		std::cout << "removeTuioCursor tcur=NULL?" << std::endl;
+		return;
+	}
+
+	// std::cout << "removeTuioCursor tcur=" << (long long)tcur << "  sessionid=" << tcur->getSessionID() << std::endl;
+
+	// for (std::list<TuioCursor*>::iterator t = cursorList.begin(); t != cursorList.end(); t++) {
+	// 	TuioCursor *tc = (*t);
+	// 	std::cout << "Before REMOVING tc =" << (long long)tc << "  sessionid=" << (long)((*t)->getSessionID()) << std::endl;
+	// }
+
 	cursorList.remove(tcur);
 	tcur->remove();
 	setUpdateCursor();
 
-	if (Verbose > 2)
+	// for (std::list<TuioCursor*>::iterator t = cursorList.begin(); t != cursorList.end(); t++) {
+	// 	TuioCursor *tc = (*t);
+	// 	std::cout << "AFTER REMOVING tc =" << (long long)tc << "  sessionid=" << (long)((*t)->getSessionID()) << std::endl;
+	// }
+
+	if (Verbose > 2) {
 		std::cout << "del cur " << tcur->getCursorID() << " (" <<  tcur->getSessionID() << ")" << std::endl;
+	}
 
 	if (tcur->getCursorID()==maxCursorID) {
 		maxCursorID = -1;
+		// std::cout << "DELETING tcur=" << (long long)tcur << std::endl;
 		delete tcur;
 		
 		if (cursorList.size()>0) {
@@ -131,21 +203,29 @@ void TuioServer::removeTuioCursor(TuioCursor *tcur) {
 			}
 			
 			freeCursorBuffer.clear();
-			for (std::list<TuioCursor*>::iterator flist=freeCursorList.begin(); flist != freeCursorList.end(); flist++) {
+			for (std::list<TuioCursor*>::iterator flist = freeCursorList.begin(); flist != freeCursorList.end(); flist++) {
 				TuioCursor *freeCursor = (*flist);
-				if (freeCursor->getCursorID()>maxCursorID) delete freeCursor;
-				else freeCursorBuffer.push_back(freeCursor);
+				if (freeCursor->getCursorID() > maxCursorID) {
+					std::cout << "DELETING freeCursor > maxCursorID =" << (long long)freeCursor << std::endl;
+					delete freeCursor;
+				}
+				else {
+					std::cout << "PUSH_BACK freeCursor =" << (long long)freeCursor << std::endl;
+					freeCursorBuffer.push_back(freeCursor);
+				}
 			}
 			freeCursorList = freeCursorBuffer;
 			
 		} else {
 			for (std::list<TuioCursor*>::iterator flist=freeCursorList.begin(); flist != freeCursorList.end(); flist++) {
 				TuioCursor *freeCursor = (*flist);
+				std::cout << "DELETING freeCursor (*flist) =" << (long long)freeCursor << std::endl;
 				delete freeCursor;
 			}
 			freeCursorList.clear();
 		} 
 	} else if (tcur->getCursorID()<maxCursorID) {
+		std::cout << "PUTTING on freeCursorList tcur=" << (long long)tcur << std::endl;
 		freeCursorList.push_back(tcur);
 	}
 }

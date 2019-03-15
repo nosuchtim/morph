@@ -37,6 +37,8 @@ extern int Alive_update_interval;
 
 using namespace TUIO;
 
+#define SIDMULTIPLIER 1000
+
 #define MORPH_MAX_FORCE 1000.0f
 
 #define MORPH_WIDTH 240
@@ -67,18 +69,18 @@ public:
 			float x0, y0, x1, y1;
 
 			if (!parseSidSpec(sidspecs[n], sidinit, port, host, x0, y0, x1, y1)) {
-				fprintf(stdout, "Unable to parse Sid Spec: %s\n",sidspecs[n].c_str());
+				fprintf(stdout, "Unable to parse Sid Spec: %s\n", sidspecs[n].c_str());
 				continue;
 			}
 
 			TuioServer* server = TuioServer::findServer(host, port);
 			if (!server) {
-				fprintf(stdout, "new TuioServer on port %d, host %s\n", port, host.c_str());
-				server = new TuioUdpServer(host, port, Alive_update_interval);
+				fprintf(stdout, "new TuioServer on port %d, host %s  sidinit %d\n", port, host.c_str(), sidinit);
+				server = new TuioUdpServer(host, port, Alive_update_interval, sidinit);
 				TuioServer::addServerToList(server);
 			}
 
-			MorphArea* ma = new MorphArea(server,x0,y0,x1,y1);
+			MorphArea* ma = new MorphArea(server, x0, y0, x1, y1);
 
 			initialsids.insert(std::pair<int, MorphArea*>(sidinit, ma));
 		}
@@ -99,7 +101,7 @@ public:
 		if (i != spec.npos) {
 			std::string s = spec.substr(i + 1);
 			spec = spec.substr(0, i);
-			sscanf(s.c_str(), "%f,%f,%f,%f",&x0,&y0,&x1,&y1);
+			sscanf(s.c_str(), "%f,%f,%f,%f", &x0, &y0, &x1, &y1);
 		}
 		i = spec.find("/");
 		if (i != spec.npos) {
@@ -107,7 +109,7 @@ public:
 			spec = spec.substr(i);
 			char hostbuff[HOST_BUFFSIZE];
 			int n = sscanf_s(spec.c_str(), "/%d@%128s", &port, hostbuff, HOST_BUFFSIZE);
-			if ( n != 2 ) {
+			if (n != 2) {
 				fprintf(stdout, "Bad format of sid spec!?\n");
 				return false;
 			}
@@ -130,6 +132,17 @@ public:
 		}
 		area = NULL;
 		return -1;
+	}
+
+	MorphArea* areaForSid(int sid) {
+		for (auto& xx : initialsids) {
+			MorphArea* ma = xx.second;
+			int areasid = xx.first;
+			if (sid >= areasid && sid < (areasid + SIDMULTIPLIER)) {
+				return ma;
+			}
+		}
+		return NULL;
 	}
 
 	void update() {

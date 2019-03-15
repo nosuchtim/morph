@@ -106,7 +106,9 @@ int main(int argc, char **argv)
 			}
 			else {
 				*pcolon++ = '\0';
-				// the format is -s {serial}:{sid} or
+				// the format is one of these
+				// -s {serial}:{sid}
+				// -s {serial}:{sid}={x0,y0,x1,y1};{sid}={x0,y0,x1,y1}
 				// -s {serial}:{sid}={x0,y0,x1,y1};{sid}={x0,y0,x1,y1}
 				serialmap.insert(std::pair<unsigned char*, unsigned char *>(serial, pcolon));
 				serialmap_filled = true;

@@ -127,11 +127,11 @@ XCOPY "C:\Program Files\Sensel\SenselLib\x86\LibSenselDecompress.dll" "$(TargetD
       </PrecompiledHeader>
       <WarningLevel>Level2</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>..\src\TUIO;..\src\oscpack;..\src\misc;c:\Program Files\Sensel\SenselLib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\TUIO;..\src\oscpack;..\src\misc;C:\Users\tjt\Documents\GitHub\sensel-api\sensel-lib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>LibSensel.lib;tuio3d_lib.lib;ws2_32.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>build\tuio3d_lib\x64\$(Configuration);C:\Program Files\Sensel\SenselLib\x64\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>build\tuio3d_lib\x64\$(Configuration);C:\Users\tjt\Documents\GitHub\sensel-api\sensel-lib\build\x64\Debug</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)morph.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -140,7 +140,7 @@ XCOPY "C:\Program Files\Sensel\SenselLib\x86\LibSenselDecompress.dll" "$(TargetD
       </DataExecutionPrevention>
     </Link>
     <PostBuildEvent>
-      <Command>XCOPY "C:\Program Files\Sensel\SenselLib\x64\LibSensel.dll" "$(TargetDir)" /Y
+      <Command>XCOPY "C:\users\tjt\documents\github\sensel-api\sensel-lib\build\x64\Debug\LibSensel.dll" "$(TargetDir)" /Y
 XCOPY "C:\Program Files\Sensel\SenselLib\x64\LibSenselDecompress.dll" "$(TargetDir)" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
