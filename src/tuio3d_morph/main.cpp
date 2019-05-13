@@ -47,6 +47,7 @@ printUsage() {
 	fprintf(stdout,"  -v               Verbosity level = 1\n");
 	fprintf(stdout,"  -V #             Verbosity level = #\n");
 	fprintf(stdout,"  -a #             Number of milliseconds between alive messages\n");
+	fprintf(stdout,"  -f #             force scale factor\n");
 	fprintf(stdout,"  -h {port}@{host} Port and hostname for TUIO output\n");
 	fprintf(stdout,"  -l               List all Morphs and their serial numbers\n");
 	fprintf(stdout,"  -s {serial#}:{initialsid}        Serial# and initial session id\n");
