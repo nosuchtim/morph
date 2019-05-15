@@ -34,6 +34,10 @@ extern int Verbose;
 
 bool PrintList = false;
 
+// These are in millimeters, obtained by asking the sensel API.
+float Morph_width;
+float Morph_height;
+
 volatile sig_atomic_t ctrl_c_requested = false;
 
 void handle_ctrl_c(int sig)
@@ -96,6 +100,10 @@ AllMorphs::init()
 		for (int led = 0; led < 16; led++) {
 			senselSetLEDBrightness(h, led, 0); //turn off LED
 		}
+		SenselSensorInfo info;
+		SenselStatus ss = senselGetSensorInfo(h, &info);
+		Morph_width = info.width;
+		Morph_height = info.height;
 	}
 
 	return true;
@@ -209,8 +217,8 @@ void AllMorphs::run() {
 					float minor = c.minor_axis;
 					float orientation = c.orientation;
 
-					float x_norm = x_mm / MORPH_WIDTH;
-					float y_norm = y_mm / MORPH_HEIGHT;
+					float x_norm = x_mm / Morph_width;
+					float y_norm = y_mm / Morph_height;
 					float f_norm = force / MORPH_MAX_FORCE;
 
 					if (x_norm > 1.0) {
