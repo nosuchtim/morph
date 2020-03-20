@@ -99,7 +99,7 @@ public:
 		if (i != spec.npos) {
 			std::string s = spec.substr(i + 1);
 			spec = spec.substr(0, i);
-			sscanf(s.c_str(), "%f,%f,%f,%f", &x0, &y0, &x1, &y1);
+			sscanf_s(s.c_str(), "%f,%f,%f,%f", &x0, &y0, &x1, &y1);
 		}
 		i = spec.find("/");
 		if (i != spec.npos) {
