@@ -10,15 +10,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\tuio3d_morph\main.cpp">
+    <ClCompile Include="..\src\morph\main.cpp">
       <Filter>Source Files\morph</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\tuio3d_morph\morph.cpp">
+    <ClCompile Include="..\src\morph\morph.cpp">
       <Filter>Source Files\morph</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\tuio3d_morph\morph.h">
+    <ClInclude Include="..\src\morph\morph.h">
       <Filter>Source Files\morph</Filter>
     </ClInclude>
   </ItemGroup>

@@ -88,7 +88,7 @@ char *base64_encode(const uint8_t *data, size_t input_length);
 std::string error_json(int code, const char *msg, const char *id = "null");
 std::string ok_json(const char *id);
 
-std::string ToNarrow( const wchar_t *s, char dfault = '?', const std::locale& loc = std::locale() );
+// std::string ToNarrow( const wchar_t *s, char dfault = '?', const std::locale& loc = std::locale() );
 std::wstring s2ws(const std::string& s);
 std::string ws2s(const std::wstring& s);
 

@@ -62,15 +62,11 @@ namespace TUIO {
 		long getSessionID();
 		std::list<TuioCursor*> getTuioCursors();
 
-		void adjustXY(float& x, float& y);
-		
 		TuioCursor* getClosestTuioCursor(float xp, float yp);
 		bool isConnected() { return connected; }
 
 		int sidInitial;
 		int sidDeviceMultiplier;
-		bool flipX;
-		bool flipY;
 		
 		virtual void update() { }
 		virtual bool matches(std::string h, int p) {

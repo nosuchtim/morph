@@ -94,9 +94,16 @@ AllMorphs::init()
 
 	for (auto& morph : _morph) {
 		SENSEL_HANDLE h = morph->_handle;
+
+		// Set register to prevent timeouts if we pause in the debugger
+		// or if the system gets super slow.
+		unsigned char val[1] = { 255 };
+		senselWriteReg(h, 0xD0, 1, val);
+
 		senselSetFrameContent(h, FRAME_CONTENT_CONTACTS_MASK);
 		senselAllocateFrameData(h, &morph->_frame);
 		senselStartScanning(h);
+
 		for (int led = 0; led < 16; led++) {
 			senselSetLEDBrightness(h, led, 0); //turn off LED
 		}
@@ -178,7 +185,25 @@ AllMorphs::listdevices() {
 
 	for (int i = 0; i < list.num_devices; i++) {
 		SenselDeviceID& dev = list.devices[i];
-		fprintf(stdout, "Sensel Morph device port=%s idx=%d serialnum=%s\n", dev.com_port, dev.idx, dev.serial_num);
+		SENSEL_HANDLE h;
+		SenselStatus stat = senselOpenDeviceBySerialNum(&h, dev.serial_num);
+		if (stat != SENSEL_OK) {
+			fprintf(stdout, "*** Unable to open *** Sensel Morph port=%s idx=%d serialnum=%s\n", dev.com_port, dev.idx, dev.serial_num);
+		} else {
+			fprintf(stdout, "Morph port=%s idx=%d serial#=%s", dev.com_port, dev.idx, dev.serial_num);
+			SenselFirmwareInfo fw_info;
+			if (senselGetFirmwareInfo(h, &fw_info) != SENSEL_OK) {
+				fprintf(stdout, " *** Unable to get FirmwareInfo! ***");
+			}
+			else {
+				fprintf(stdout, " Firmware");
+				// fprintf(stdout, " id.revision=%d.%d", fw_info.device_id, fw_info.device_revision);
+				// fprintf(stdout, " protocol=%d", fw_info.fw_protocol_version);
+				fprintf(stdout, " version=%d.%d.%d", fw_info.fw_version_major, fw_info.fw_version_minor, fw_info.fw_version_build);
+				// fprintf(stdout, " release=%d", fw_info.fw_version_release);
+			}
+			fprintf(stdout, "\n");
+		}
 	}
 }
 
@@ -229,8 +254,17 @@ void AllMorphs::run() {
 					}
 					// leave f_norm alone, let it go higher
 
+					extern bool FlipX;
+					extern bool FlipY;
+					if (FlipY) {
+						y_norm = 1.0f - y_norm;
+					}
+					if (FlipX) {
+						x_norm = 1.0f - x_norm;
+					}
+
 					if (Verbose > 2) {
-						fprintf(stdout, "Serial: %s   Contact ID: %d   State: %s   xy=%.4f,%.4f\n",
+						fprintf(stdout, "Serial: %s   Contact ID: %d   State: %s   x_mm,y_mm=%.4f,%.4f\n",
 							morph->_serialnum, c.id, statestr, x_mm, y_mm);
 					}
 		

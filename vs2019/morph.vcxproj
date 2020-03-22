@@ -21,29 +21,29 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7B8E0BFF-6B1F-4C1C-987D-1E1F91DF3215}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <ProjectName>tuio3d_morph</ProjectName>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <ProjectName>morph</ProjectName>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <UseOfAtl>false</UseOfAtl>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <UseOfAtl>false</UseOfAtl>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -93,7 +93,6 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;ENDIANESS=OSC_HOST_LITTLE_ENDIAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader />
@@ -102,8 +101,8 @@
       <AdditionalIncludeDirectories>..\src\TUIO;..\src\oscpack;..\src\misc;C:\Program Files\Sensel\SenselLib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>LibSensel.lib;tuio3d_lib.lib;ws2_32.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>build\tuio3d_lib\x86\$(Configuration);C:\Program Files\Sensel\SenselLib\x86\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>LibSensel.lib;tuio3d.lib;ws2_32.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>build\tuio3d\x86\$(Configuration);C:\Program Files\Sensel\SenselLib\x86\</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -127,11 +126,11 @@ XCOPY "C:\Program Files\Sensel\SenselLib\x86\LibSenselDecompress.dll" "$(TargetD
       </PrecompiledHeader>
       <WarningLevel>Level2</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>..\src\TUIO;..\src\oscpack;..\src\misc;C:\Users\tjt\Documents\GitHub\sensel-api\sensel-lib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\TUIO;..\src\oscpack;..\src\misc;C:\Program Files\Sensel\SenselLib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>LibSensel.lib;tuio3d_lib.lib;ws2_32.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>build\tuio3d_lib\x64\$(Configuration);C:\Users\tjt\Documents\GitHub\sensel-api\sensel-lib\build\x64\Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>LibSensel.lib;tuio3d.lib;ws2_32.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>build\tuio3d\x64\$(Configuration);C:\Program Files\Sensel\SenselLib\x64</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)morph.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -140,8 +139,11 @@ XCOPY "C:\Program Files\Sensel\SenselLib\x86\LibSenselDecompress.dll" "$(TargetD
       </DataExecutionPrevention>
     </Link>
     <PostBuildEvent>
-      <Command>XCOPY "C:\users\tjt\documents\github\sensel-api\sensel-lib\build\x64\Debug\LibSensel.dll" "$(TargetDir)" /Y
-XCOPY "C:\Program Files\Sensel\SenselLib\x64\LibSenselDecompress.dll" "$(TargetDir)" /Y</Command>
+      <Command>XCOPY "C:\Program Files\Sensel\SenselLib\x64\LibSensel.dll" "$(TargetDir)" /Y
+XCOPY "C:\Program Files\Sensel\SenselLib\x64\LibSenselDecompress.dll" "$(TargetDir)" /Y
+XCOPY "C:\Program Files\Sensel\SenselLib\x64\LibSensel.dll" "$(GOPATH)"\bin /Y
+XCOPY "C:\Program Files\Sensel\SenselLib\x64\LibSenselDecompress.dll" "$(GOPATH)"\bin /Y
+XCOPY "$(TargetDir)"morph.exe "$(GOPATH)"\bin /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -190,11 +192,11 @@ XCOPY "C:\Program Files\Sensel\SenselLib\x64\LibSenselDecompress.dll" "$(TargetD
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\tuio3d_morph\main.cpp" />
-    <ClCompile Include="..\src\tuio3d_morph\morph.cpp" />
+    <ClCompile Include="..\src\morph\main.cpp" />
+    <ClCompile Include="..\src\morph\morph.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\tuio3d_morph\morph.h" />
+    <ClInclude Include="..\src\morph\morph.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
