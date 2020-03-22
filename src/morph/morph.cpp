@@ -254,8 +254,17 @@ void AllMorphs::run() {
 					}
 					// leave f_norm alone, let it go higher
 
+					extern bool FlipX;
+					extern bool FlipY;
+					if (FlipY) {
+						y_norm = 1.0f - y_norm;
+					}
+					if (FlipX) {
+						x_norm = 1.0f - x_norm;
+					}
+
 					if (Verbose > 2) {
-						fprintf(stdout, "Serial: %s   Contact ID: %d   State: %s   xy=%.4f,%.4f\n",
+						fprintf(stdout, "Serial: %s   Contact ID: %d   State: %s   x_mm,y_mm=%.4f,%.4f\n",
 							morph->_serialnum, c.id, statestr, x_mm, y_mm);
 					}
 		

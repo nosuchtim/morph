@@ -25,34 +25,18 @@
 using namespace TUIO;
 
 extern int Verbose;
-extern bool FlipX;
-extern bool FlipY;
 
 std::list<TuioServer*> TuioServer::allservers;
 
 TuioServer::TuioServer() {
-	flipX = FlipX;
-	flipY = FlipY;
 }
 
 TuioServer::~TuioServer() {
 }
 
-void
-TuioServer::adjustXY(float& x, float& y) {
-	if (flipY) {
-		y = 1.0f - y;
-	}
-	if (flipX) {
-		x = 1.0f - x;
-	}
-}
-
 TuioCursor* TuioServer::addTuioCursor(float x, float y) {
 	sessionID++;
 	
-	adjustXY(x, y);
-
 	int cursorID = (int)cursorList.size();
 	if (((int)(cursorList.size())<=maxCursorID) && ((int)(freeCursorList.size())>0)) {
 		std::list<TuioCursor*>::iterator closestCursor = freeCursorList.begin();
@@ -100,8 +84,6 @@ TuioCursor* TuioServer::addTuioCursor(float x, float y) {
 }
 
 TuioCursor* TuioServer::addTuioCursorId(float x, float y, int uid, int id) {
-
-	adjustXY(x, y);
 
 	sessionID = uid;
 	int cursorID = id;
@@ -154,7 +136,6 @@ void TuioServer::updateTuioCursor(TuioCursor *tcur,float x, float y) {
 	if (tcur == NULL) {
 		return;
 	}
-	adjustXY(x, y);
 	tcur->update(x,y);
 
 	setUpdateCursor();

@@ -130,12 +130,6 @@ void TuioUdpServer::sendFullMessages() {
 
 		float x = (*tuioCursor)->getX();
 		float y = (*tuioCursor)->getY();
-		if (flipX) {
-			x = 1.0f - x;
-		}
-		if (flipY) {
-			y = 1.0f - y;
-		}
 
 		// add the actual cursor set message
 		(*fullPacket) << osc::BeginMessage("/tuio/25Dcur") << "set";
@@ -311,12 +305,6 @@ void TuioUdpServer::addCursorMessage(TuioCursor *tcur) {
 	(*oscPacket) << osc::BeginMessage( "/tuio/25Dcur") << "set";
 	float x = tcur->getX();
 	float y = tcur->getY();
-	if (flipX) {
-		x = 1.0f - x;
-	}
-	if (flipY) {
-		y = 1.0f - y;
-	}
 	 (*oscPacket) << (int32)(tcur->getSessionID()) << x << y << tcur->getForce();
 	 (*oscPacket) << tcur->getXSpeed() << tcur->getYSpeed() << tcur->getForceSpeed() << tcur->getMotionAccel() ;	
 	 (*oscPacket) << osc::EndMessage;
