@@ -20,6 +20,8 @@
  */
 
 #include "TuioTime.h"
+#include <math.h>
+
 using namespace TUIO;
 	
 long TuioTime::start_milliseconds = 0;
@@ -34,6 +36,16 @@ TuioTime TuioTime::getStartTime() {
 }
 
 TuioTime TuioTime::getSystemTime() {
-	TuioTime systemTime(timeGetTime());
+
+	long ms;
+	time_t s;
+	struct timespec spec;
+
+	clock_gettime(CLOCK_REALTIME, &spec);
+
+	s = spec.tv_sec;
+	ms = round(spec.tv_nsec / 1.0e6);
+
+	TuioTime systemTime( ms );
 	return systemTime;
 }

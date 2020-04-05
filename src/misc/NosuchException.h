@@ -2,7 +2,9 @@
 
 #include <exception>
 #include <string>
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 class NosuchException {
 	char *_msg;

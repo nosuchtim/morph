@@ -23,16 +23,19 @@
 
 #include "TuioServer.h"
 #include "TuioCursor.h"
-#include "Morph.h"
+#include "morph.h"
 #include "xgetopt.h"
-#include "tchar.h"
+// #include "tchar.h"
+#include <unistd.h>
 
 #include <map>
 
 using namespace TUIO;
 extern int Verbose;
 
+extern "C" {
 bool PrintList = false;
+}
 
 // These are in millimeters, obtained by asking the sensel API.
 float Morph_width;
@@ -226,7 +229,7 @@ void AllMorphs::run() {
 				for (int i = 0; i < frame->n_contacts; i++) {
 
 					unsigned int state = frame->contacts[i].state;
-					char* statestr =
+					const char* statestr =
 						state == CONTACT_INVALID ? "CONTACT_INVALID" :
 						state == CONTACT_START ? "CONTACT_START" :
 						state == CONTACT_MOVE ? "CONTACT_MOVE" :
@@ -321,7 +324,7 @@ void AllMorphs::run() {
 						// TuioServer::printAllLists();
 					}
 		
-					char* event = "unknown";
+					const char* event = "unknown";
 					switch (c.state)
 					{
 					case CONTACT_START:
@@ -354,6 +357,6 @@ void AllMorphs::run() {
 			// morph->update();
 		}
 
-		Sleep(1);  // some sort of throttle is probably needed
+		usleep(1);  // some sort of throttle is probably needed
 	}
 }

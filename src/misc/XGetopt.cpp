@@ -25,13 +25,18 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // if you are not using precompiled headers then include these lines:
+#ifdef _WIN32
 #include <windows.h>
+#endif
 // #include <stdio.h>
-#include <tchar.h>
+// #include <tchar.h>
 ///////////////////////////////////////////////////////////////////////////////
 
+extern "C" {
 
-#include "XGetopt.h"
+#include <unistd.h>
+#include "xgetopt.h"
+#include <cstring>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -146,16 +151,16 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-const char	*optarg;		// global argument pointer
+char	*optarg;		// global argument pointer
 int		optind = 0; 	// global argv index
 
 #ifndef EOF
 #define EOF    (-1)
 #endif
 
-int getopt(int argc, const char *argv[], const char *optstring)
+int MYgetopt(int argc, char *argv[], const char *optstring)
 {
-	static const char *next = NULL;
+	static char *next = NULL;
 	if (optind == 0)
 		next = NULL;
 
@@ -214,4 +219,6 @@ int getopt(int argc, const char *argv[], const char *optstring)
 	}
 
 	return c;
+}
+
 }

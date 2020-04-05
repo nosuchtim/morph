@@ -19,7 +19,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include "NosuchUtil.h"
+#include <unistd.h>
 #include "TuioServer.h"
 #include "TuioUdpServer.h"
 
@@ -38,7 +38,7 @@ static DWORD WINAPI ThreadFunc( LPVOID obj )
 	while ((server->isConnected()) && (server->periodicMessagesEnabled())) {
 		server->sendFullMessages();
 #ifndef WIN32
-		usleep(USEC_SECOND*tuioServer->getUpdateInterval());
+		usleep(USEC_SECOND*server->getUpdateInterval());
 #else
 		Sleep(MSEC_SECOND*server->getUpdateInterval());
 #endif
@@ -68,7 +68,7 @@ void TuioUdpServer::disablePeriodicMessages() {
 #ifdef WIN32
 	if( thread ) CloseHandle( thread );
 #endif
-	thread = NULL;	
+	thread = (pthread_t)NULL;	
 }
 
 void TuioUdpServer::sendFullMessages() {
@@ -187,7 +187,7 @@ void TuioUdpServer::initialize(std::string host, int port) {
 
 	clearUpdateCursor();
 
-	lastCursorUpdate = timeGetTime();
+	lastCursorUpdate = TuioTime::getSystemTime();
 
 	sendEmptyCursorBundle();
 
@@ -220,7 +220,8 @@ void TuioUdpServer::commitFrame() {
 
 			TuioCursor *tcur = (*tuioCursor);
 
-			long tm = timeGetTime();
+			TuioTime now(TuioTime::getSystemTime());
+			long tm = now.getMilliSeconds();
 
 			// If it's too old, remove it.  There's an intermittent bug somewhere
 			// that occasionally leaves TuioCursors around, so this works around that.
@@ -248,8 +249,8 @@ void TuioUdpServer::commitFrame() {
 		}
 		sendCursorBundle(++currentFrame);
 	} else if (periodic_update) {
-		long milli = timeGetTime();
-		long dt = milli - lastCursorUpdate;
+		TuioTime milli(TuioTime::getSystemTime());
+		long dt = milli.getMilliSeconds() - lastCursorUpdate.getMilliSeconds();
 		if ( dt > alive_update_interval ) {
 			lastCursorUpdate = milli;
 			startCursorBundle();

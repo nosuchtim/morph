@@ -93,20 +93,20 @@ public:
 		host = "127.0.0.1";
 		x0 = y0 = 0.0;
 		x1 = y1 = 1.0;
-		sscanf_s(spec.c_str(), "%d", &sidinit);
+		sscanf(spec.c_str(), "%d", &sidinit);
 		size_t i;
 		i = spec.find("=");
 		if (i != spec.npos) {
 			std::string s = spec.substr(i + 1);
 			spec = spec.substr(0, i);
-			sscanf_s(s.c_str(), "%f,%f,%f,%f", &x0, &y0, &x1, &y1);
+			sscanf(s.c_str(), "%f,%f,%f,%f", &x0, &y0, &x1, &y1);
 		}
 		i = spec.find("/");
 		if (i != spec.npos) {
 #define HOST_BUFFSIZE 256
 			spec = spec.substr(i);
 			char hostbuff[HOST_BUFFSIZE];
-			int n = sscanf_s(spec.c_str(), "/%d@%128s", &port, hostbuff, HOST_BUFFSIZE);
+			int n = sscanf(spec.c_str(), "/%d@%128s", &port, hostbuff);
 			if (n != 2) {
 				fprintf(stdout, "Bad format of sid spec!?\n");
 				return false;

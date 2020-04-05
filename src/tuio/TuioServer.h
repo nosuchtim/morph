@@ -36,6 +36,10 @@
 #include "ip/NetworkingUtils.h"
 #include "ip/UdpSocket.h"
 
+extern "C" {
+extern bool PrintList;
+}
+
 class MMTT_SharedMem;
 
 #include "TuioCursor.h"
@@ -95,7 +99,6 @@ namespace TUIO {
 		}
 
 		static void updateAllServers() {
-			extern bool PrintList;
 			if (PrintList) {
 				printAllLists();
 			}
@@ -123,7 +126,7 @@ namespace TUIO {
 		std::list<TuioCursor*> cursorList;
 		long sessionID;
 		int maxCursorID;
-		long lastCursorUpdate;
+		TuioTime lastCursorUpdate;
 		bool connected;
 
 	private:

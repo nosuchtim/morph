@@ -25,7 +25,10 @@
 	WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#ifdef _WIN32
 #include <windows.h>
+#endif
+
 #include <stdarg.h>
 #include <iostream>
 #include <fstream>
@@ -40,11 +43,23 @@
 #include <errno.h>
 #include <string.h>
 
+#ifndef FALSE
+#define FALSE 0
+#endif
+
+#ifndef TRUE
+#define TRUE 1
+#endif
+
+typedef int BOOL;
+
 using namespace std;
 
 int NosuchDebugLevel = 0;
 bool NosuchDebugToConsole = false;
+#ifdef USE_TIMETAG
 bool NosuchDebugTimeTag = true;
+#endif
 bool NosuchDebugThread = true;
 bool NosuchDebugToLog = true;
 bool NosuchDebugToLogWarned = false;
@@ -68,9 +83,13 @@ static std::list<std::string> DebugBuffer;
 
 std::list<std::string> DebugLogBuffer;
 bool DebugInitialized = FALSE;
+#ifdef USE_TIMETAG
 long NosuchTime0;
+#endif
 
+#ifdef USE_MUTEX
 HANDLE dMutex;
+#endif
 
 void
 NosuchDebugSetLogDirFile(std::string logdir, std::string logfile)
@@ -111,20 +130,28 @@ RealDebugDumpLog() {
 void
 NosuchDebugDumpLog()
 {
+#ifdef USE_MUTEX
 	DWORD wait = WaitForSingleObject( dMutex, INFINITE);
 	if ( wait == WAIT_ABANDONED )
 		return;
+#endif
 
 	RealDebugDumpLog();
 
+#ifdef USE_MUTEX
 	ReleaseMutex(dMutex);
+#endif
 }
 
 void
 NosuchDebugInit() {
 	if ( ! DebugInitialized ) {
+#ifdef USE_MUTEX
 		dMutex = CreateMutex(NULL, FALSE, NULL);
+#endif
+#ifdef USE_TIMETAG
 		NosuchTime0 = timeGetTime();
+#endif
 		DebugInitialized = TRUE;
 	}
 }
@@ -132,7 +159,9 @@ NosuchDebugInit() {
 void
 NosuchDebugCleanup() {
 	if ( DebugInitialized ) {
+#ifdef USE_MUTEX
 		ReleaseMutex(dMutex);
+#endif
 	}
 }
 
@@ -145,9 +174,11 @@ RealNosuchDebug(int level, char const *fmt, va_list args)
 	if ( level > NosuchDebugLevel )
 		return;
 
+#ifdef USE_MUTEX
 	DWORD wait = WaitForSingleObject( dMutex, INFINITE);
 	if ( wait == WAIT_ABANDONED )
 		return;
+#endif
 
     // va_list args;
     char msg[10000];
@@ -155,28 +186,34 @@ RealNosuchDebug(int level, char const *fmt, va_list args)
 	int msgsize = sizeof(msg)-2;
 
 	if ( NosuchDebugPrefix != "" ) {
-		int nchars = _snprintf_s(pmsg,msgsize,_TRUNCATE,"%s",NosuchDebugPrefix.c_str());
+		int nchars = snprintf(pmsg,msgsize,"%s",NosuchDebugPrefix.c_str());
 		pmsg += nchars;
 		msgsize -= nchars;
 	}
+#ifdef USE_TIMETAG
 	if ( NosuchDebugTimeTag ) {
 		int nchars;
 		double secs = (timeGetTime()-NosuchTime0) / 1000.0f;
-		nchars = _snprintf_s(msg,msgsize,_TRUNCATE,"[%.3f] ",secs);
+		nchars = snprintf(msg,msgsize,"[%.3f] ",secs);
 		pmsg += nchars;
 		msgsize -= nchars;
 	}
+#endif
 
     // va_start(args, fmt);
-    vsprintf_s(pmsg,msgsize,fmt,args);
+    vsnprintf(pmsg,msgsize,fmt,args);
 
 	char *p = strchr(msg,'\0');
 	if ( p != NULL && p != msg && *(p-1) != '\n' ) {
-		strcat_s(msg,msgsize,"\n");
+		strcat(msg,"\n");
 	}
 
 	if ( NosuchDebugToConsole ) {
+#ifdef _WIN32
 		OutputDebugStringA(msg);
+#else
+		fprintf(stderr,"%s",msg);
+#endif
 	}
 	if ( NosuchDebugToLog ) {
 		DebugLogBuffer.push_back(msg);
@@ -201,7 +238,9 @@ RealNosuchDebug(int level, char const *fmt, va_list args)
 
     // va_end(args);
 
+#ifdef USE_MUTEX
 	ReleaseMutex(dMutex);
+#endif
 }
 
 void
@@ -237,19 +276,23 @@ NosuchErrorOutput(const char *fmt, ...)
     va_start(args, fmt);
 
     char msg[10000];
-    vsprintf_s(msg,sizeof(msg)-2,fmt,args);
+    vsnprintf(msg,sizeof(msg)-2,fmt,args);
     va_end(args);
 
 	char *p = strchr(msg,'\0');
 	if ( p != NULL && p != msg && *(p-1) != '\n' ) {
-		strcat_s(msg,sizeof(msg),"\n");
+		strcat(msg,"\n");
 	}
 
 	if ( NosuchErrorPopup != NULL ) {
 		NosuchErrorPopup(msg);
 	}
 
+#ifdef _WIN32
 	OutputDebugStringA(msg);
+#else
+	fprintf(stderr,"%s",msg);
+#endif
 
 	NosuchDebug("NosuchErrorOutput: %s",msg);
 }
@@ -277,7 +320,7 @@ NosuchSnprintf(const char *fmt, ...)
 
 	while (1) {
 		va_start(args, fmt);
-		int written = vsnprintf_s(msg,msglen,_TRUNCATE,fmt,args);
+		int written = vsnprintf(msg,msglen,fmt,args);
 		va_end(args);
 		if ( written < msglen ) {
 			return std::string(msg);
@@ -297,6 +340,7 @@ NosuchForwardSlash(std::string filepath) {
 	return filepath;
 }
 
+#if 0
 BOOL DirectoryExists(const char* path)
 {
   DWORD dwAttrib = GetFileAttributesA(path);
@@ -304,6 +348,7 @@ BOOL DirectoryExists(const char* path)
   return (dwAttrib != INVALID_FILE_ATTRIBUTES && 
          (dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
+#endif
 
 std::string
 MmttPath(std::string fn)
@@ -319,7 +364,7 @@ MmttPath(std::string fn)
 		}
 		else {
 			// Resort to \Users\Public
-			char* userdir = "c:\\Users\\Public";
+			const char* userdir = "c:\\Users\\Public";
 			savedroot = NosuchSnprintf("%s\\Documents\\Nosuch Media\\MultiMultiTouchTouch", userdir);
 			NosuchErrorOutput("Using root directory: %s", savedroot.c_str());
 		}

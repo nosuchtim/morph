@@ -62,7 +62,7 @@ namespace TUIO {
 		TuioPoint (float xp, float yp) {
 			xpos = xp;
 			ypos = yp;
-			startTime = timeGetTime();
+			startTime = TuioTime::getSystemTime();
 		};
 	
 		/**
@@ -74,7 +74,7 @@ namespace TUIO {
 		TuioPoint (TuioPoint *tpoint) {
 			xpos = tpoint->getX();
 			ypos = tpoint->getY();
-			startTime = timeGetTime();
+			startTime = TuioTime::getSystemTime();
 		};
 		
 		/**
