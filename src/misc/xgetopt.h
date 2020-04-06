@@ -15,9 +15,11 @@
 #ifndef XGETOPT_H
 #define XGETOPT_H
 
+extern "C" {
 extern int optind, opterr;
-extern const char *optarg;
+extern char *optarg;
 
-int getopt(int argc, const char *argv[], const char *optstring);
+int MYgetopt(int argc, char *argv[], const char *optstring);
+}
 
 #endif //XGETOPT_H

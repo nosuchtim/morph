@@ -39,7 +39,7 @@ namespace TUIO {
 		 * The individual cursor ID number that is assigned to each TuioCursor.
 		 */ 
 		int cursor_id;
-		long creation_time;
+		TuioTime creation_time;
 		
 	public:
 		/**
@@ -53,7 +53,7 @@ namespace TUIO {
 		 */
 		TuioCursor (long si, int ci, float xp, float yp):TuioContainer(si,xp,yp) {
 			cursor_id = ci;
-			creation_time = timeGetTime();
+			creation_time = TuioTime::getSystemTime();
 		};
 		
 		/**
@@ -64,7 +64,7 @@ namespace TUIO {
 		 */
 		TuioCursor (TuioCursor *tcur):TuioContainer(tcur) {
 			cursor_id = tcur->getCursorID();
-			creation_time = timeGetTime();
+			creation_time = TuioTime::getSystemTime();
 		};
 		
 		/**
@@ -81,7 +81,7 @@ namespace TUIO {
 		};
 
 		long getCreationTime() {
-			return creation_time;
+			return creation_time.getMilliSeconds();
 		};
 		
 	};

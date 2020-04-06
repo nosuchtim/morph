@@ -32,6 +32,10 @@
 #define TUIO_STOPPED 3
 #define TUIO_REMOVED 4
 
+extern "C" {
+extern float ForceFactor;
+}
+
 namespace TUIO {
 	
 	/**
@@ -112,10 +116,13 @@ namespace TUIO {
 			TuioPoint lastPoint = path.back();
 			TuioPoint::update(xp, yp);
 			
-			long dt = timeGetTime() - lastPoint.getStartTime().getMilliSeconds();
+			TuioTime myTime(TuioTime::getSystemTime());
+
+			long dt = myTime.getMilliSeconds() - lastPoint.getStartTime().getMilliSeconds();
 			if ( dt == 0 ) {
 				printf("HEY, dt==0 in update!?\n");
 			}
+
 			float dx = xpos - lastPoint.getX();
 			float dy = ypos - lastPoint.getY();
 			float dist = sqrt(dx*dx+dy*dy);
@@ -235,7 +242,6 @@ namespace TUIO {
 		};
 
 		virtual void setForce(float f) {
-			extern float ForceFactor;
 			force = f * ForceFactor;
 		};
 		

@@ -27,6 +27,7 @@
 #include "TuioCursor.h"
 
 #include <stdio.h>
+#include <string.h>
 
 #include <list>
 #include <map>
@@ -34,7 +35,7 @@
 #include "morph.h"
 
 #include "xgetopt.h"
-#include "tchar.h"
+// #include "tchar.h"
 
 #include "sensel.h"
 #include "sensel_device.h"
@@ -54,7 +55,10 @@ printUsage() {
 	fprintf(stdout,"\n");
 }
 
+extern "C" {
 float ForceFactor = 1.0;
+}
+
 int Verbose = 0;
 int Alive_update_interval = 1000; // milliseconds
 bool FlipX = false;
@@ -69,38 +73,37 @@ int main(int argc, char **argv)
 	std::map<unsigned char*, unsigned char*> serialmap;
 	bool serialmap_filled = false;
 
-	while ((c = getopt(argc, (const char**)argv, "vxyV:a:f:h:i:lLm:p:s:")) != EOF) {
+	while ((c = MYgetopt(argc, (char**)argv, "vxyV:a:f:h:i:lLm:p:s:")) != EOF) {
 		switch (c) {
-		case _T('f'):
-			extern float ForceFactor;
+		case ('f'):
 			ForceFactor = (float)atof(optarg);
 			break;
-		case _T('v'):
+		case ('v'):
 			Verbose = 1;
 			break;
-		case _T('x'):
+		case ('x'):
 			FlipX = true;
 			break;
-		case _T('y'):
+		case ('y'):
 			FlipY = true;
 			break;
-		case _T('V'):
+		case ('V'):
 			Verbose = atoi(optarg);
 			break;
-		case _T('a'):
+		case ('a'):
 			Alive_update_interval = atoi(optarg);
 			break;
-		case _T('h'):
+		case ('h'):
 			host = optarg;
 			break;
 #if 0
-		case _T('i'):
+		case ('i'):
 			sidinitial = atoi(optarg);
 			break;
 #endif
-		case _T('s'):
+		case ('s'):
 		{
-			unsigned char* serial = (unsigned char*)_strdup((const char*)optarg);
+			unsigned char* serial = (unsigned char*)strdup((const char*)optarg);
 			unsigned char* pcolon = (unsigned char*)strchr((char*)serial, ':');
 			if (pcolon == NULL) {
 				printf("Invalid value for -s option\n");
@@ -116,10 +119,10 @@ int main(int argc, char **argv)
 			}
 			break;
 		}
-		case _T('l'):
+		case ('l'):
 			listdevices = true;
 			break;
-		case _T('?'):
+		case ('?'):
 			printUsage();
 			return 1;
 		}
