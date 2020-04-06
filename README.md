@@ -1,7 +1,7 @@
 # morph
 A TUIO 3D server for the Sensel Morph
 
-The code here only runs on Windows.
+The code here runs on Windows and the Raspberry Pi.
 
 In order to use this code, you need to install the Sensel libraries, which are
 found in this GitHub repository: https://github.com/sensel/sensel-api .
