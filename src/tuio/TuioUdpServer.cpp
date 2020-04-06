@@ -19,7 +19,9 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 #include "TuioServer.h"
 #include "TuioUdpServer.h"
 
@@ -67,8 +69,11 @@ void TuioUdpServer::disablePeriodicMessages() {
 	
 #ifdef WIN32
 	if( thread ) CloseHandle( thread );
-#endif
+	thread = NULL;
+#else
 	thread = (pthread_t)NULL;	
+#endif
+
 }
 
 void TuioUdpServer::sendFullMessages() {

@@ -26,7 +26,9 @@
 #include "morph.h"
 #include "xgetopt.h"
 // #include "tchar.h"
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #include <map>
 
@@ -356,7 +358,10 @@ void AllMorphs::run() {
 			TuioServer::updateAllServers();
 			// morph->update();
 		}
-
+#ifdef _WIN32
+		Sleep(1);
+#else
 		usleep(1);  // some sort of throttle is probably needed
+#endif
 	}
 }

@@ -37,6 +37,10 @@ TuioTime TuioTime::getStartTime() {
 
 TuioTime TuioTime::getSystemTime() {
 
+#ifdef _WIN32
+    TuioTime systemTime(timeGetTime());
+    return systemTime;
+#else
 	long ms;
 	time_t s;
 	struct timespec spec;
@@ -47,5 +51,6 @@ TuioTime TuioTime::getSystemTime() {
 	ms = round(spec.tv_nsec / 1.0e6);
 
 	TuioTime systemTime( ms );
-	return systemTime;
+    return systemTime;
+#endif
 }
