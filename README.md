@@ -1,4 +1,4 @@
-# TUIO3D_Sensel
+# morph
 A TUIO 3D server for the Sensel Morph
 
 The code here only runs on Windows.
