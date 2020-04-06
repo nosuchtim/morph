@@ -11,6 +11,7 @@ https://github.com/sensel/sensel-api/blob/master/sensel-install/SenselLibWin.exe
 
 ====================================================================
 
+```
 usage: morph [-v] [-V #] [-a #] [-h port@host] [-l]
   -v               Verbosity level = 1
   -V #             Verbosity level = #
@@ -19,6 +20,7 @@ usage: morph [-v] [-V #] [-a #] [-h port@host] [-l]
   -h {port}@{host} Port and hostname for TUIO output
   -l               List all Morphs and their serial numbers
   -s {serial#}:{initialsid}        Serial# and initial session id
+```
 
 The -v makes it verbose, so it will show you the messages that it's sending out.  The -h argument is the host to which the OSC messages are sent.  The default port is 3333; if you want to use a different port, specify it by using {port}@{hostname} for the -h argument.
 
