@@ -184,11 +184,11 @@ public:
 class AllMorphs { 
 	
 public:
-	AllMorphs(std::map<unsigned char*,unsigned char*> );
+	AllMorphs(SenselDeviceList list, std::map<unsigned char*,unsigned char*> );
 	~AllMorphs() {
 	};
 	
-	static void listdevices();
+	static void listdevices(SenselDeviceList list);
 
 	void run();
 	bool init();

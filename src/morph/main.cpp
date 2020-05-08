@@ -128,18 +128,26 @@ int main(int argc, char **argv)
 		}
 	}
 
+	SenselDeviceList list;
+
+	senselGetDeviceList(&list);
+	if (list.num_devices == 0) {
+		fprintf(stdout, "No Sensel devices found!\n");
+		return 1;
+	}
+
 	if (listdevices) {
-		AllMorphs::listdevices();
+		AllMorphs::listdevices(list);
 		return 0;
 	}
 
 	int nleft = argc - optind;
-	if ( nleft != 0 ) {
+	if ( nleft != 0 || serialmap_filled == false ) {
 		printUsage();
 		return 1;
 	}
 
-	AllMorphs *allmorphs = new AllMorphs(serialmap);
+	AllMorphs *allmorphs = new AllMorphs(list, serialmap);
 
 	if (allmorphs->init()) {
 		allmorphs->run();
