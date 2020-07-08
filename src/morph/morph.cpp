@@ -19,8 +19,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include <nats.h>
-
 #include <signal.h>
 
 #include "TuioServer.h"
@@ -33,7 +31,6 @@
 #endif
 
 #include <map>
-
 
 using namespace TUIO;
 extern int Verbose;

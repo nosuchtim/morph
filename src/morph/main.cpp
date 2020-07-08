@@ -19,8 +19,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include <nats.h>
-
 #include "NosuchUtil.h"
 
 #include "TuioServer.h"
@@ -42,8 +40,6 @@
 #include "sensel.h"
 #include "sensel_device.h"
 
-natsConnection* NatsConn = NULL;
-
 using namespace TUIO;
 
 void
@@ -54,7 +50,6 @@ printUsage() {
 	fprintf(stdout,"  -a #             Number of milliseconds between alive messages\n");
 	fprintf(stdout,"  -f #             force scale factor\n");
 	fprintf(stdout,"  -h {port}@{host} Port and hostname for TUIO output\n");
-	fprintf(stdout,"  -n {host}        Hostname for NATS output\n");
 	fprintf(stdout,"  -l               List all Morphs and their serial numbers\n");
 	fprintf(stdout,"  -s {serial#}:{initialsid}        Serial# and initial session id\n");
 	fprintf(stdout,"\n");
@@ -71,7 +66,6 @@ bool FlipY = false;
 
 int main(int argc, char **argv)
 {
-	const char* nats = NULL;
 	const char *host = NULL;
 	int port = -1;
 	int c;
@@ -79,7 +73,7 @@ int main(int argc, char **argv)
 	std::map<unsigned char*, unsigned char*> serialmap;
 	bool serialmap_filled = false;
 
-	while ((c = MYgetopt(argc, (char**)argv, "vxyV:a:f:h:i:lLm:n:p:s:")) != EOF) {
+	while ((c = MYgetopt(argc, (char**)argv, "vxyV:a:f:h:i:lLm:p:s:")) != EOF) {
 		switch (c) {
 		case ('f'):
 			ForceFactor = (float)atof(optarg);
@@ -98,9 +92,6 @@ int main(int argc, char **argv)
 			break;
 		case ('a'):
 			Alive_update_interval = atoi(optarg);
-			break;
-		case ('n'):
-			nats = optarg;
 			break;
 		case ('h'):
 			host = optarg;
@@ -148,25 +139,6 @@ int main(int argc, char **argv)
 	if (listdevices) {
 		AllMorphs::listdevices(list);
 		return 0;
-	}
-
-	if (nats != NULL) {
-
-		natsStatus s;
-
-
-		// Creates a connection to the default NATS URL
-		s = natsConnection_ConnectTo(&NatsConn, nats);
-		if (s == NATS_OK) {
-			// This is a convenient function to send a message on "foo"
-			// as a string.
-			printf("Publishing a morph message on NATS\n");
-			s = natsConnection_PublishString(NatsConn, "morph", "OINK");
-		}
-		else {
-			printf("Unable to connect to Nats server\n");
-			return 1;
-		}
 	}
 
 	int nleft = argc - optind;
