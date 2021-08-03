@@ -50,11 +50,7 @@ void handle_ctrl_c(int sig)
 	ctrl_c_requested = true;
 }
 
-AllMorphs::AllMorphs(std::map<unsigned char*,unsigned char*> serialmap) {
-
-	SenselDeviceList devlist;
-
-	senselGetDeviceList(&devlist);
+AllMorphs::AllMorphs(SenselDeviceList devlist, std::map<unsigned char*,unsigned char*> serialmap) {
 
 	// If no explicit serialmap is given, we create one.
 	if (serialmap.size() == 0) {
@@ -68,22 +64,34 @@ AllMorphs::AllMorphs(std::map<unsigned char*,unsigned char*> serialmap) {
 	}
 
 	int nfound = 0;
+	unsigned char* autosids = NULL;
+	unsigned char* AUTO = (unsigned char *)"AUTO";
 	for (auto& x : serialmap) {
 		SENSEL_HANDLE h;
 		unsigned char* serial = x.first;
+		if ( strcmp((char*)serial, (char*)AUTO) == 0 ) {
+			autosids = x.second;
+			continue;
+		}
 		if (devlist.num_devices > 0 && senselOpenDeviceBySerialNum(&h, serial) == SENSEL_OK) {
-			_morph.push_back(new OneMorph(h, serial, x.second));
+			OneMorph* newmorph = new OneMorph(h, serial, x.second);
+			_morph.push_back(newmorph);
 			nfound++;
 		}
 		else {
 			fprintf(stdout, "Unable to find Morph with serial number '%s'\n", serial);
 		}
 	}
-
-	if (devlist.num_devices == 0) {
-		fprintf(stdout, "Error: no Sensel devices found!\n");
+	// If a serial value of AUTO is detected, it's replaced with the first device
+	if (autosids != NULL) {
+		SENSEL_HANDLE h;
+		unsigned char* serial = devlist.devices[0].serial_num;
+		if (devlist.num_devices > 0 && senselOpenDeviceBySerialNum(&h, serial) == SENSEL_OK) {
+			fprintf(stdout, "AUTO device is using Morph named %s\n",serial);
+			OneMorph* newmorph = new OneMorph(h, AUTO, autosids);
+			_morph.push_back(newmorph);
+		}
 	}
-
 }
 
 bool
@@ -180,13 +188,7 @@ void OneMorph::released(MorphArea* area, int sid) {
 }
 
 void
-AllMorphs::listdevices() {
-	SenselDeviceList list;
-
-	senselGetDeviceList(&list);
-	if (list.num_devices == 0) {
-		fprintf(stdout, "No Sensel devices found!\n");
-	}
+AllMorphs::listdevices(SenselDeviceList list) {
 
 	for (int i = 0; i < list.num_devices; i++) {
 		SenselDeviceID& dev = list.devices[i];
