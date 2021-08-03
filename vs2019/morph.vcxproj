@@ -22,7 +22,7 @@
     <ProjectGuid>{7B8E0BFF-6B1F-4C1C-987D-1E1F91DF3215}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <ProjectName>morph</ProjectName>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -125,10 +125,10 @@ XCOPY "C:\Program Files\Sensel\SenselLib\x86\LibSenselDecompress.dll" "$(TargetD
       </PrecompiledHeader>
       <WarningLevel>Level2</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>..\src\TUIO;..\src\oscpack;..\src\misc;C:\Program Files\Sensel\SenselLib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\TUIO;..\src\oscpack;..\src\misc;..\SenselLib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>LibSensel.lib;tuio3d.lib;ws2_32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../SenselLib/x64/LibSensel.lib;tuio3d.lib;ws2_32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>build\tuio3d\x64\$(Configuration);C:\Program Files\Sensel\SenselLib\x64</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)morph.pdb</ProgramDatabaseFile>
@@ -138,9 +138,9 @@ XCOPY "C:\Program Files\Sensel\SenselLib\x86\LibSenselDecompress.dll" "$(TargetD
       </DataExecutionPrevention>
     </Link>
     <PostBuildEvent>
-      <Command>XCOPY "C:\Program Files\Sensel\SenselLib\x64\LibSensel.dll" "$(TargetDir)" /Y
+      <Command>XCOPY "..\SenselLib\x64\LibSensel.dll" "$(TargetDir)" /Y
 
-XCOPY "C:\Program Files\Sensel\SenselLib\x64\LibSenselDecompress.dll" "$(TargetDir)" /Y
+XCOPY "..\SenselLib\x64\LibSenselDecompress.dll" "$(TargetDir)" /Y
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -195,7 +195,9 @@ XCOPY "C:\Program Files\Sensel\SenselLib\x64\LibSenselDecompress.dll" "$(TargetD
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\src\morph\main.cpp" />
-    <ClCompile Include="..\src\morph\morph.cpp" />
+    <ClCompile Include="..\src\morph\morph.cpp">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\src\TUIO;..\src\oscpack;..\src\misc;..\SenselLib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\morph\morph.h" />
